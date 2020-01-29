@@ -2353,35 +2353,7 @@
 				<version>${poi.version}</version>
 			</dependency>
 
-			<!-- Apache Spark - https://spark.apache.org/ -->
-			<dependency>
-				<groupId>org.apache.spark</groupId>
-				<artifactId>spark-core_2.11</artifactId>
-				<version>${spark.version}</version>
-				<exclusions>
-					<exclusion>
-						<!--
-						Conflicts with javax.ws.rs:javax.ws.rs-api
-						And this artifact is a ghost anyway somehow...
-						Not sure why/how it gets brought in.
-						-->
-						<groupId>com.sun.jersey</groupId>
-						<artifactId>jersey-core</artifactId>
-					</exclusion>
-					<exclusion>
-						<!--
-						Conflicts with commons-beanutils:commons-beanutils
-						and commons-collections:commons-collections
-						-->
-						<groupId>commons-beanutils</groupId>
-						<artifactId>commons-beanutils-core</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>xml-apis</groupId>
-						<artifactId>xml-apis</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
+		
 			<!-- Batik - https://xmlgraphics.apache.org/batik/ -->
 			<dependency>
 				<groupId>org.apache.xmlgraphics</groupId>
@@ -2655,13 +2627,7 @@
 				<version>${commons-collections.version}</version>
 			</dependency>
 
-			<!-- Commons Compress - https://commons.apache.org/proper/commons-compress/ -->
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-compress</artifactId>
-				<version>${commons-compress.version}</version>
-			</dependency>
-
+			
 			<!-- Commons IO - https://commons.apache.org/proper/commons-io/ -->
 			<dependency>
 				<groupId>commons-io</groupId>
@@ -3367,7 +3333,13 @@
         <dependency>
             <groupId>net.imagej</groupId>
             <artifactId>imagej</artifactId>
-	</dependency>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 	<!-- NB: For ImageJ 1.x support. -->
 	<dependency>
         	<groupId>net.imagej</groupId>
