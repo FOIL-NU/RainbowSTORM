@@ -22,7 +22,7 @@ RainbowSTORM is an open-source, user-friendly ImageJ/Fiji plugin for end-to-end 
 
 
 # Getting Started
-RainbowSTORM requires: [ImageJ](https://imagej.nih.gov/ij/download.html) or [FIJI](https://imagej.net/Fiji/Downloads) and [ThunderSTORM](https://github.com/zitmen/thunderstorm/wiki/Downloads). For ImageJ installations the [Bioformats plugin](https://www.openmicroscopy.org/bio-formats/downloads/) is also needed to load the provided [test datasets](https://github.com/FOIL-NU/RainbowSTORM/tree/master/rs-ij-plugin-v1/RainbowSTORM%20Test
+RainbowSTORM requires: [ImageJ](https://imagej.nih.gov/ij/download.html) or [FIJI](https://imagej.net/Fiji/Downloads) and [ThunderSTORM](https://github.com/zitmen/thunderstorm/wiki/Downloads). For ImageJ installations the [Bioformats plugin](https://www.openmicroscopy.org/bio-formats/downloads/) is also needed to load the provided [test datasets](https://github.com/FOIL-NU/RainbowSTORM/tree/master/rs-ij-plugin-v1/RainbowSTORM%20Test)
 
 Locate the latest RainbowSTORM release in the [here](https://github.com/FOIL-NU/RainbowSTORM/tree/master/rs-ij-plugin-v1/Current%20Release). Test data is available [here](https://github.com/FOIL-NU/RainbowSTORM/tree/master/rs-ij-plugin-v1/RainbowSTORM%20Test).
 
