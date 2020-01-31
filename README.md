@@ -14,19 +14,19 @@ RainbowSTORM is an open-source, user-friendly ImageJ/Fiji plugin for end-to-end 
 
 - **Data Visualization:** The spectral images, line plot of the average line spectra, and scatter plots of the centroids versus the spectral photon counts are displayed on the visualization screen. RainbowSTORM also allows users to plot histograms of the spatial and spectral fields.
 
-- **Spectroscopic Super-Resolution Image Rendering:** RainbowSTORM uses the spectral centroids and the coordinates of each localization to render True-Color super-resolution reconstructions. 
+- **Spectroscopic Super-Resolution Image Rendering:** RainbowSTORM uses the spectral centroids and the coordinates of each localization to render Pseudo-colored super-resolution reconstructions. 
 
-- **sSMLM Post-Processing:** After spectroscopic analysis has been performed, users can perform a variety of post-processing steps including drift correction, image quality analysis using Fourier correlation analysis, and generation of pseudo-colored classification based on the spectral centroids. The histograms of the spatial and spectral fields can be visualized and used to select specific segments localizations or remove outliers. Application of the post-processing filters updates the True-Color reconstructions, spectral images, line plot of the average spectra as well as the centroid versus photon scatter plot. The original sSMLM data can be reloaded using RainbowSTORM's reset option.
+- **sSMLM Post-Processing:** After spectroscopic analysis has been performed, users can perform a variety of post-processing steps including drift correction, image quality analysis using Fourier correlation analysis, and generation of multi-colored super-resolution images with each color channel classified based on the spectral centroids. The histograms of the spatial and spectral fields can be visualized and used to select specific segments localizations or remove outliers. Application of the post-processing filters updates the Pseudo-colored reconstructions, spectral images, line plot of the average spectra as well as the centroid versus photon scatter plot. The original sSMLM data can be reloaded using RainbowSTORM's reset option.
 
 - **sSMLM Summary:** RainbowSTORM keeps track of all post-processing methods which have been applied. Also, the average spectral photon counts, average spectral uncertainties and the number of localizations displayed are shown on the visualization screen.
 
 
 # Getting Started
-RainbowSTORM requires: [ImageJ](https://imagej.nih.gov/ij/download.html) or [FIJI](https://imagej.net/Fiji/Downloads) and [ThunderSTORM](https://github.com/zitmen/thunderstorm/wiki/Downloads).
+RainbowSTORM requires: [ImageJ](https://imagej.nih.gov/ij/download.html) or [FIJI](https://imagej.net/Fiji/Downloads) and [ThunderSTORM](https://github.com/zitmen/thunderstorm/wiki/Downloads). For ImageJ installations the [Bioformats plugin](https://www.openmicroscopy.org/bio-formats/downloads/) is also needed to load the provided [test datasets](https://github.com/FOIL-NU/RainbowSTORM/tree/master/rs-ij-plugin-v1/RainbowSTORM%20Test
 
-Locate the latest RainbowSTORM release in the [here](https://github.com/FOIL-NU/RS/tree/master/rs-ij-plugin-v1/Current%20Release). Test data is available [here](https://github.com/FOIL-NU/RS/tree/master/rs-ij-plugin-v1/RainbowSTORM%20Test).
+Locate the latest RainbowSTORM release in the [here](https://github.com/FOIL-NU/RainbowSTORM/tree/master/rs-ij-plugin-v1/Current%20Release). Test data is available [here](https://github.com/FOIL-NU/RainbowSTORM/tree/master/rs-ij-plugin-v1/RainbowSTORM%20Test).
 
-Install the RainbowSTORM plugin (rs_ij_plugin-0.1.0-SNAPSHOT.jar)by copying the file into the Plugins subfolder of your ImageJ installation (e.g. “C:\Program Files\ImageJ\plugins”).  Verify the successful installation of RainbowSTORM by restarting ImageJ and locating RainbowSTORM under the Plugins menu.
+Install the RainbowSTORM plugin (Rainbow_STORM.jar)by copying the file into the Plugins subfolder of your ImageJ installation (e.g. “C:\Program Files\ImageJ\plugins”).  Verify the successful installation of RainbowSTORM by restarting ImageJ and locating RainbowSTORM under the Plugins menu.
 
 
 # How to Cite
