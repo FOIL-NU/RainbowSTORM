@@ -18,11 +18,11 @@ and open the template in the editor.
             <ul>
                 <li> id - Index of each fitted blinking event</li>
                 <li> frame - The frame of each blinking event</li> 
-                <li> x - The subpixel x position of each blinking event. Used to reconstruction the super-resolution images.
+                <li> x - The subpixel x position of each blinking event. Used to reconstruct the super-resolution images.
                     Values are confined within the bounds of the original image or selected region of interest. Estimated using ThunderSTORM.</li>
-                <li> y - The subpixel y position of each blinking event. Used to reconstruction the super-resolution images.
+                <li> y - The subpixel y position of each blinking event. Used to reconstruct the super-resolution images.
                     Values are confined within the bounds of the original image or selected region of interest. Estimated using ThunderSTORM</li>
-                <li> z - The subpixel z position of each blinking event estimated using the astigmatism processing method using ThunderSTORM. Used to reconstruction the 3D super-resolution images. Accepted range: -2000 to 2000.
+                <li> z - The subpixel z position of each blinking event estimated using the astigmatism processing method using ThunderSTORM. Used to reconstruct the 3D super-resolution images. Accepted range: -2000 to 2000.
                     spatial photons	Total photons of the fitted blinking event in the spatial domain. Used to estimate the localization uncertainty. Estimated using ThunderSTORM</li>
                 <li> spatial sigma - The standard deviation of the fitted blinking event in the spatial domain.
                     Used to estimate the localization uncertainty and point spread function width along the focal plane. Estimated using ThunderSTORM</li>
@@ -34,7 +34,7 @@ and open the template in the editor.
                     Combined with sample labeling, the localization uncertainty is used to estimate the resolution of the reconstructed image. Estimated using ThunderSTORM</li>
                 <li> spectral centroid - The spectral centroid or spectral mean of each blinking event.
                     The centroid can be used to infer information related to the identity, local environment and conformational state of the source (dye or protein) of the blinking event.
-                    Values are used to color-code sSMLM images. Estimated using RainbowSTORM. Accepted centroids range from 380 to 900 with a minimum step size of 1</li>
+                    Values are used to color-code pseudo-colored super-resolution images. Estimated using RainbowSTORM. Accepted centroids range from 380 to 900 with a minimum step size of 1</li>
                 <li> spectral photons - The total photons of the spectrum of each blinking event. Used to estimate the spectral uncertainty. Estimated using RainbowSTORM</li>
                 <li> spectral bk photons - The total background photons of the spectrum of each blinking event. Estimated using RainbowSTORM</li>
                 <li> spectral bk photons/pixel - The total background photons for each pixel of the image of the spectrum of each blinking event. 
@@ -82,7 +82,7 @@ and open the template in the editor.
             Pressing this button renders a stack of images color-code by their spectral centroid with each image in the stack based on the axial information for each localization.
             
             <h2>Classify by Centroid button</h2>
-            The "Classify by Centroid" button launches the RainbowSTORM Classification screen where localizations can be grouped into color-coded image windows based on their spectral centroids.
+            The "Classify by Centroid" button launches the RainbowSTORM Classification screen where localizations can be grouped into predefined color-coded image windows based on their spectral centroids.
             
             <h2>Calculate FRC button</h2>
             Pressing the "Calculate FRC" button performs <a href="https://doi.org/10.1038/nmeth.2448">Fourier Ring Correlation (FRC) analysis</a> for the sSMLM super-resolution reconstruction. 
@@ -107,8 +107,8 @@ and open the template in the editor.
             The first file saves all RainbowSTORM fields and the second file includes all RainbowSTORM fields as well as the values for the full spectrum range. 
             RainbowSTORM appends the "_spec" to the second file which can be loaded into RainbowSTORM using the Import screen.
                                     
-            <h2>Lambda-Colored Images and colorbar</h2>
-            Lambda-colored super-resolution reconstructions are color-coded using the  spectral centroids of each localization to set a color-range 
+            <h2>Pseudo-Colored Images and colorbar</h2>
+            Pseudo-colored super-resolution reconstructions are color-coded using the  spectral centroids of each localization to set a color-range 
             
               <h2>RainbowSTORM Help Screens</h2>     
             Details for using each RainbowSTORM screen can be found below:

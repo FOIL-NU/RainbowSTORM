@@ -38,10 +38,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import rstorm.Analysis;
-import ij.plugin.BrowserLauncher;
-
 import ij.plugin.ContrastEnhancer;
-import java.awt.Cursor;
+
 import java.awt.Desktop;
 import java.awt.Dialog;
 import java.awt.Window;

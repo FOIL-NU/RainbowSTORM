@@ -94,10 +94,10 @@ public class sSMLMLambdaColoredRendering {
          
           
      
-      ImagePlus out = new ImagePlus("sSMLM Lambda-Colored Scatter Rendering", cp);     
+      ImagePlus out = new ImagePlus("sSMLM Pseudo-Colored Scatter Rendering", cp);     
       ContrastEnhancer ce = new ContrastEnhancer();
       ce.stretchHistogram(out, 0.35);
-      out.setTitle("sSMLM Lambda-Colored ScatterRendering");
+      out.setTitle("sSMLM Pseudo-Colored ScatterRendering");
       out.show();
       this.drawLegend(nRng,cols);
    
@@ -178,7 +178,7 @@ public class sSMLMLambdaColoredRendering {
              ip=null;
       
           }
-       ImagePlus fin = new ImagePlus("sSMLM Lambda-Colored Averaged Gaussian Rendering",n_stack);
+       ImagePlus fin = new ImagePlus("sSMLM Pseudo-Colored Averaged Gaussian Rendering",n_stack);
        
        ZProjector imgs2 = new ZProjector(fin);
        imgs2.setMethod(ZProjector.SUM_METHOD);
@@ -188,7 +188,7 @@ public class sSMLMLambdaColoredRendering {
       
       ContrastEnhancer ce = new ContrastEnhancer();
       ce.stretchHistogram(out, 0.35);
-      out.setTitle("sSMLM Lambda-Colored Averaged Gaussian Rendering");
+      out.setTitle("sSMLM Pseudo-Colored Averaged Gaussian Rendering");
       out.show();
       this.drawLegend(nRng,cols);
      
@@ -306,7 +306,7 @@ public class sSMLMLambdaColoredRendering {
          
           public ImagePlus getImage() {
      
-         image = new ImagePlus("sSMLM True Color Rendering", cp);
+         image = new ImagePlus("sSMLM Pseudo-Colored Super-resolution Rendering", cp);
         
    
         

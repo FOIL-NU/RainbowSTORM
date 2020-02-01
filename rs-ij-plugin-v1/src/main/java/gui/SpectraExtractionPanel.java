@@ -22,15 +22,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import rstorm.Analysis;
-import ij.plugin.BrowserLauncher;
-import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Window;
-import java.io.IOException;
+
 import java.net.URL;
 import java.text.ParseException;
 import java.util.logging.Level;
@@ -69,8 +66,8 @@ public class SpectraExtractionPanel extends JPanel {
     public static  JCheckBox checkboxFitSpecWidth;
     private  JCheckBox checkboxRmvOLSpec;
     public static JFormattedTextField ftfVisStpSize;
-    
-    
+    public static JFormattedTextField ftfYShift;
+        
     private boolean caliLoaded;
     private boolean csvLoaded;
     private boolean imgReady;
@@ -107,34 +104,8 @@ public class SpectraExtractionPanel extends JPanel {
         bc.gridx = 0;
         bc.gridy = 0;
         bc.anchor = GridBagConstraints.CENTER;
+         
        
-        
-        JPanel spSize = new JPanel();
-        spSize.setLayout(new FlowLayout());
-         spSize.add(new JLabel("Localization Pixel Shift: +/-"));
-        int iDspsz= 1;
-        ftfBlinkingWidth = new JFormattedTextField();
-        ftfBlinkingWidth.setValue(new Integer(iDspsz));
-        //ftfBlinkingWidth.addPropertyChangeListener("value",this);
-        ftfBlinkingWidth.setColumns(4);
-        spSize.add(ftfBlinkingWidth);
-          spSize.add(new  JLabel ("Fit Spectrum Width [nm]: "));
-        checkboxFitSpecWidth=new JCheckBox();
-        checkboxFitSpecWidth.setEnabled(true);
-        checkboxFitSpecWidth.setSelected(true);
-        spSize.add(checkboxFitSpecWidth);
-        double dDspw=40;
-        spSize.add(new  JLabel ("Average Spectrum Width [nm]: "));
-        ftfSpecWidth = new JFormattedTextField();
-        ftfSpecWidth.setValue(new Double(dDspw));
-        ftfSpecWidth.setColumns(4);
-        ftfSpecWidth.setEnabled(false);
-        ftfSpecWidth.setEditable(false);
-        spSize.add(ftfSpecWidth);
-      
-        add(spSize,bc);
-     
-        
         JPanel spWindowPanel= new JPanel();
         spWindowPanel.setLayout(new FlowLayout());
         
@@ -158,14 +129,52 @@ public class SpectraExtractionPanel extends JPanel {
         int iDsprng2= 750;
         ftfSpectraWindowRng2 = new JFormattedTextField();
        
-       ftfSpectraWindowRng2.setValue(new Integer(iDsprng2));
-           ftfSpectraWindowRng2.setColumns(4);
-        spWindowPanel.add(ftfSpectraWindowRng2);
+        ftfSpectraWindowRng2.setValue(new Integer(iDsprng2));
+        ftfSpectraWindowRng2.setColumns(4);
+         spWindowPanel.add(ftfSpectraWindowRng2);
+         add(spWindowPanel,bc); 
         
+        JPanel spSize = new JPanel();
+        spSize.setLayout(new FlowLayout());
+        
+          spSize.add(new  JLabel ("Fit Spectrum Width [nm]: "));
+        checkboxFitSpecWidth=new JCheckBox();
+        checkboxFitSpecWidth.setEnabled(true);
+        checkboxFitSpecWidth.setSelected(true);
+        spSize.add(checkboxFitSpecWidth);
+        double dDspw=40;
+        spSize.add(new  JLabel ("Average Spectrum Width [nm]: "));
+        ftfSpecWidth = new JFormattedTextField();
+        ftfSpecWidth.setValue(new Double(dDspw));
+        ftfSpecWidth.setColumns(4);
+        ftfSpecWidth.setEnabled(false);
+        ftfSpecWidth.setEditable(false);
+        spSize.add(ftfSpecWidth);
+                
        
         bc.gridy++;
-        add(spWindowPanel,bc);
+        add(spSize,bc);
         
+         JPanel pxCompPanel = new JPanel();
+        pxCompPanel.setLayout(new FlowLayout());
+        
+        pxCompPanel.add(new JLabel("Localization Pixel Shift: +/-"));
+        int iDspsz= 1;
+        ftfBlinkingWidth = new JFormattedTextField();
+        ftfBlinkingWidth.setValue(new Integer(iDspsz));
+        ftfBlinkingWidth.setColumns(4);
+        pxCompPanel.add(ftfBlinkingWidth);
+        
+        pxCompPanel.add(new JLabel("Y-Compensation:"));
+        int iDyshf= 0;
+        ftfYShift = new JFormattedTextField();
+        ftfYShift.setValue(new Integer(iDyshf));
+        ftfYShift.setColumns(4);
+        pxCompPanel.add(ftfYShift);
+        
+        bc.gridy++;
+        add(pxCompPanel,bc);
+                     
         JPanel exPanel = new JPanel();
         exPanel.setLayout(new FlowLayout());
     
@@ -220,11 +229,14 @@ public class SpectraExtractionPanel extends JPanel {
                 
   
                 try{
+                  ftfYShift.commitEdit();  
                  ftfBlinkingWidth.commitEdit();
                   ftfSpectraWindowRng1.commitEdit();
                    ftfSpectraWindowRng2.commitEdit();
                    ftfStpSize.commitEdit();
+                  
                    
+                 int ycomp= ((Number)ftfYShift.getValue()).intValue();
                  int bw=((Number)ftfBlinkingWidth.getValue()).intValue();
               
                  int rng1=((Number)ftfSpectraWindowRng1.getValue()).intValue();
@@ -270,7 +282,7 @@ public class SpectraExtractionPanel extends JPanel {
                       rmvOL=0;  
                      }
                 //  IJ.showProgress(0.25);    
-                 controller.extractSpectra(bw, rng1,  rng2,  stp, px_Size,EMG,adu,bsLv,fitFlg,specWidth,rmvOL);
+                 controller.extractSpectra(bw, rng1,  rng2,  stp, px_Size,EMG,adu,bsLv,fitFlg,specWidth,ycomp,rmvOL);
                 // IJ.showProgress(1);
                   IJ.showStatus("sSMLM data Processed!");
                  
@@ -292,11 +304,14 @@ public class SpectraExtractionPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
               
                try{
+                 ftfYShift.commitEdit();  
                  ftfBlinkingWidth.commitEdit();
                   ftfSpectraWindowRng1.commitEdit();
                    ftfSpectraWindowRng2.commitEdit();
                    ftfStpSize.commitEdit();
-                
+                   
+                   
+                int ycomp =((Number)ftfYShift.getValue()).intValue();
                  int bw=((Number)ftfBlinkingWidth.getValue()).intValue();
                   
                 int rng1=((Number)ftfSpectraWindowRng1.getValue()).intValue();
@@ -338,7 +353,7 @@ public class SpectraExtractionPanel extends JPanel {
                      if(checkboxRmvOLSpec.isSelected()==false){
                       rmvOL=0;  
                      } 
-                 controller.previewSpectra(bw, rng1,  rng2,  stp, px_Size,EMG,adu,bsLv,fitFlg,specWidth,rmvOL);
+                 controller.previewSpectra(bw, rng1,  rng2,  stp, px_Size,EMG,adu,bsLv,fitFlg,specWidth, ycomp,rmvOL);
                  buttonPreview.setEnabled(false);
                 
                   IJ.showStatus("sSMLM data Processed!");

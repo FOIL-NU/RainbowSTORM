@@ -192,7 +192,7 @@ public class Blinking {
         int bsLv=(int)params[12]; 
         int fitFlg =(int) params[13];
         double specWidth =params[14];
-        
+        int ycomp = (int) params[15];
         int sz = blinkingEvents.size();
         Blinking nB= blinkingEvents.get(0);
      
@@ -311,7 +311,7 @@ public class Blinking {
             
             int x_shift=n_crp-org_wid-1;
           
-            int y_shift=(y);
+            int y_shift=(y)+ycomp;
               double[] spec=new double[dif];  
               double[] photons=new double[3];
               double sig_spe= 0;
@@ -400,7 +400,7 @@ public class Blinking {
     
    public ImageProcessor getPSF_Image(ImagePlus zeroOrderImage,Blinking bEvent,double[] params){
        
-         int rng= 3;
+         int rng= (((int)params[0])*2)+1;
          int w =(2*rng)+1;
          int h=w;
          int pixelSize=(int) params[4];
@@ -459,7 +459,12 @@ public class Blinking {
    }
     
     public ImageProcessor getSpec_Image(ImagePlus firstOrderImage,Blinking bEvent, double[] params,double[] xD,double[] yD,int fitOrder){
-        int r= 3;
+       
+        
+        
+         int r= (((int)params[0])*2)+1;
+        
+        //int r= 3;
         int h =(2*r)+1;
        
         int rng1=(int) params[1];
@@ -469,6 +474,7 @@ public class Blinking {
         int org_x=(int)params[5];
         int org_wid=(int)params[7];
         int px_shift=(int)params[8];
+        int ycomp=(int) params[15];
     
         
         int[] fy=setWavelengths(rng1,rng2,stp);
@@ -526,7 +532,7 @@ public class Blinking {
          
             int x_shift=n_crp-org_wid-1;
         
-            int y_shift=(y_i);
+            int y_shift=(y_i)+ycomp;
           
              
         

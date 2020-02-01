@@ -319,8 +319,7 @@ private void setupActionListerners(){
      int rng1=(int) ps[1];
      int rng2= (int) ps[2];
      int stp= (int)  ps[3];
-     
-          
+    
      int tot= bEs.size();
      int cID = controller.getCurrentEventID();
         

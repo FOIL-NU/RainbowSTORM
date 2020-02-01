@@ -280,7 +280,6 @@ public class VisbyClassPanel extends JPanel {
         buttonHelp.setEnabled(true);
         buttonHelp.setPreferredSize(new Dimension (20,20));
         helpPanel.add(buttonHelp);
-        //bc.gridy=bc.gridy++;
         mc.anchor=GridBagConstraints.LAST_LINE_END;
         
        add(helpPanel, mc);
