@@ -608,7 +608,7 @@ public class SpectraExtractionPanel extends JPanel {
     public static boolean validRange(int rng1, int rng2, int stp){
 
         boolean flg= false;
-        boolean flg1=rng1<380||rng2>900||rng1<0||rng2<0||rng1>=rng2;
+        boolean flg1=rng1<380||rng2>870||rng1<0||rng2<0||rng1>=rng2;
         if(flg1){
             IJ.error("Invalid spectrum Range selected. Please select values from 380 nm : 900 nm)");
 
