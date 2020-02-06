@@ -66,8 +66,8 @@
 	 <dependency>
 	  <groupId>net.imagej</groupId>
 	  <artifactId>ij</artifactId>
-	  <version>1.52p</version>
-            <scope>provided</scope>
+	  <version>1.52q</version>
+	  <type>jar</type>
 	 </dependency>
 	 <dependency>
 	  <groupId>au.com.bytecode</groupId>
@@ -129,6 +129,7 @@
             </descriptorRefs> 
             <finalName>${project.artifactId}</finalName>
             <appendAssemblyId>false</appendAssemblyId>
+            <classifier>release</classifier>
         </configuration> 
     </plugin>
   </plugins>

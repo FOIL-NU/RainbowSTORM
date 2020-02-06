@@ -1031,7 +1031,7 @@ public class FRC {
         }
        
         double fireRes=calculateFireNumber(frcCurve, method);
-        Plot FRC_plot= doPlot(frcCurve,method,fireRes, "FRC Plot");
+        Plot FRC_plot= doPlot(frcCurve,method,fireRes, ": sSMLM FRC Plot");
         FRC_plot.show();
         
         return fireRes ;
@@ -1232,7 +1232,7 @@ public class FRC {
 		
 		// Plot the data
 
-		Plot p = new Plot("FRC Of "+name, "Spatial Frequency", "Correlation");
+		Plot p = new Plot("FRC"+name, "Spatial Frequency", "Correlation");
 
 		p.setLineWidth(1);
 

@@ -44,8 +44,6 @@ public class ExportCSV {
         if (userSelection== JFileChooser.APPROVE_OPTION) {
             IJ.log("getCurrentDirectory(): "  +  fc2.getCurrentDirectory());
             
-                //FileWriter fw = new FileWriter(fc2.getSelectedFile()+".txt"); 
-                //fw.write(sb);
                 saveDirectory = fc2.getSelectedFile().toString();
                 lastFilename=saveDirectory;
                 String saveFilename = saveDirectory +".csv";
@@ -85,6 +83,12 @@ public class ExportCSV {
             } else {
             IJ.log("A folder was not selected.");
         }
+        
+           
+       /* if(userSelection == JFileChooser.CANCEL_OPTION||userSelection ==JFileChooser.ABORT){
+            parentFrame.dispose();
+            
+        }*/
         
     }
     

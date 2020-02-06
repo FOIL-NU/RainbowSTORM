@@ -95,14 +95,15 @@ public class FRC_Analysis {
           
           GaussianRendering o_gsr = new GaussianRendering(width,height,resolution);
           o_gsr.renderImage(oddBEs, xmin,ymin);
-          odd_im = o_gsr.getImage();
           
+          odd_im = o_gsr.getImage();
+          odd_im.setTitle("Odd sSMLM");
           odd_im.show();
           
           GaussianRendering e_gsr = new GaussianRendering(width,height,resolution);
           e_gsr.renderImage(evenBEs,xmin,ymin);
           even_im = e_gsr.getImage();
-      
+          even_im.setTitle("Even sSMLM"); 
           even_im.show();
         
      

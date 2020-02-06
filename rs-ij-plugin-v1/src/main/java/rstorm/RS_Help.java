@@ -42,7 +42,7 @@ public class RS_Help implements PlugIn {
         
       try {
            
-            JDialog dialog = new JDialog(IJ.getInstance(), "RainbowSTORM Help Screens(" + ver + ")");
+            JDialog dialog = new JDialog(IJ.getInstance(), "RainbowSTORM sSMLM Help Screens(" + ver + ")");
             if(IJ.isJava17()) {
                 dialog.setType(Window.Type.UTILITY);
             }

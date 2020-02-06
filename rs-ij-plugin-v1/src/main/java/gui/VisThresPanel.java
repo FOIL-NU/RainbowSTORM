@@ -32,6 +32,7 @@ public class VisThresPanel extends JPanel {
     private JLabel postProcess;
     private boolean dataImported;
     
+    
  public VisThresPanel(Analysis controller,boolean importedData){
         this.controller = controller;
         dataImported=importedData;
@@ -43,7 +44,7 @@ public class VisThresPanel extends JPanel {
        
     private void setupView(){
              
-                 Dimension preferredSize = new Dimension(750,100);
+                 Dimension preferredSize = new Dimension(750,150);
                 setPreferredSize(preferredSize);
                 setBorder(BorderFactory.createTitledBorder("sSMLM Summary")); 
                 GridBagLayout mgb = new GridBagLayout();
@@ -132,7 +133,7 @@ public class VisThresPanel extends JPanel {
                        double utilPts=stats[4];
                        IJ.log("UtilPts"+utilPts);
                        
-                       String st = "Average Photons: ";
+                       String st = "Average Spectral Photons: ";
                        String str = String.format("%.2f", avg_ph);
                        st= st+(str);
                        avgPhotons.setText(st);

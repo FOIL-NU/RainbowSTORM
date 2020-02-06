@@ -24,7 +24,7 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Window;
-import java.io.IOException;
+
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -581,7 +581,7 @@ public class VisbyClassPanel extends JPanel {
                 
                   try {
            
-            JDialog dialog = new JDialog(IJ.getInstance(), "RainbowSTORM Help(" + ver + ")");
+            JDialog dialog = new JDialog(IJ.getInstance(), "RainbowSTORM sSMLM Help(" + ver + ")");
             if(IJ.isJava17()) {
                 dialog.setType(Window.Type.UTILITY);
             }

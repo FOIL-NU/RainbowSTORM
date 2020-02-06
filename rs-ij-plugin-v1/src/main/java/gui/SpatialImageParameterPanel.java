@@ -86,7 +86,7 @@ public class SpatialImageParameterPanel extends JPanel {
         c.gridy ++;
         add(new JLabel("Pixel Size [nm]: "), c);
         c.gridy ++;
-        add(new JLabel("Photoelectrons per A/D count: "), c);
+        add(new JLabel("Photoelectrons per A/D count : "), c);
         c.gridy ++;        
         add(new JLabel("Base level [A/D count]: "), c);
         c.gridy ++;

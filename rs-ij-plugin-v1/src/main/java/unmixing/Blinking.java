@@ -923,8 +923,7 @@ public class Blinking {
             float wv= wvs[i];
             float val=spec[i];
             float tmp =val*wv;
-            // IJ.log("Wavelength "+wvs[i]);
-            // IJ.log("Val "+spec[i]);
+           
             sum_spec_wv=sum_spec_wv+tmp;
             sum_spec=sum_spec+val;
             
@@ -933,8 +932,7 @@ public class Blinking {
         
         tmp_c=sum_spec_wv/sum_spec;
         c=(double) tmp_c;
-       //  IJ.log("Centroid "+c);
-        
+     
         return c;
     }
     
@@ -959,32 +957,6 @@ public class Blinking {
         
     }
     
-  /*  public float[] findSpectrum(ImagePlus firstOrder, int averageSize) {
-        ImageStack stack = firstOrder.getStack();
-        ImageProcessor processor = stack.getProcessor(this.frame);
-        
-        this.spectrum = new float[processor.getWidth()];
-        
-        float[] currentSpectrum;
-        
-        for (int i= -averageSize; i <=averageSize; i++) {
-            // Check bounds
-            if (!(this.y + i < 0 || this.y + i > processor.getHeight()) ) {
-                currentSpectrum = processor.getRow(0, (int) this.y + i, spectrum, processor.getWidth());
-                
-                // Add it to the final spectrum
-                for (int j=0; j < currentSpectrum.length; j++) {
-                    this.spectrum[j] = this.spectrum[j] + currentSpectrum[j];
-                }
-            }
-        } 
-       
-        return this.spectrum;
-    }
-    */
-    
-    
-   
     private float[] interpLinear(double[] x, double[] y, double[] xi) throws IllegalArgumentException {
 
         if (x.length != y.length) {

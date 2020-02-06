@@ -149,8 +149,12 @@ public class ImportsSMLMPanel extends JPanel {
         buttonLoadSpectraData.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
+                    spData=new ArrayList<Blinking>();
+                    IJ.log(textfieldLoadSpectraDataFilename.getText());
                     spData =controller.loadBlinkingSpectraData(textfieldLoadSpectraDataFilename.getText());
+                   if(spData!=null){
                     IJ.log("Size: "+spData.size());
+                }
                     
                 } catch (IOException ex) {
                     Logger.getLogger(ImportsSMLMPanel.class.getName()).log(Level.SEVERE, null, ex);

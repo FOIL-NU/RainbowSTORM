@@ -424,7 +424,7 @@ public class sSMLMCalibrationGUI extends JPanel{
                 
                   try {
            
-            JDialog dialog = new JDialog(IJ.getInstance(), "RainbowSTORM Help(" + ver + ")");
+            JDialog dialog = new JDialog(IJ.getInstance(), "RainbowSTORM sSMLM Help(" + ver + ")");
             if(IJ.isJava17()) {
                 dialog.setType(Window.Type.UTILITY);
             }

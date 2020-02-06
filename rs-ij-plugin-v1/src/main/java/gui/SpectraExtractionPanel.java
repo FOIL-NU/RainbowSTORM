@@ -56,6 +56,9 @@ public class SpectraExtractionPanel extends JPanel {
     private JButton buttonFindSpectra;
     private JButton buttonPreview;
     private JButton buttonHelp;
+    private JButton buttonDefaults;
+    
+    private JCheckBox checkboxAdParams;
 
     public static JFormattedTextField ftfBlinkingWidth;
     public static JFormattedTextField ftfSpectraWindowRng1;
@@ -71,6 +74,17 @@ public class SpectraExtractionPanel extends JPanel {
     private boolean caliLoaded;
     private boolean csvLoaded;
     private boolean imgReady;
+    
+    
+    final int iSpR1 =650;
+    final int iSpStp=1;
+    final int iSpR2=750;
+    final boolean bFtSw=true;
+    final int iAvSw=40;
+    final int iLPS=1;
+    final int iYCmp=0;
+    final boolean bRmOvSp=false;
+    final boolean bAdSt=false;
     
     
     
@@ -111,41 +125,64 @@ public class SpectraExtractionPanel extends JPanel {
         
         spWindowPanel.add(new JLabel("Spectrum Window Range [Start : Step Size : End] [nm]: "));
         
-        int iDsprng1= 650;
+      
         ftfSpectraWindowRng1 = new JFormattedTextField();
-        ftfSpectraWindowRng1.setValue(new Integer(iDsprng1));
-          ftfSpectraWindowRng1.setColumns(4);
+        ftfSpectraWindowRng1.setValue(new Integer(iSpR1));
+        ftfSpectraWindowRng1.setColumns(4);
         spWindowPanel.add(ftfSpectraWindowRng1);
         
         spWindowPanel.add(new JLabel(" : "));
         
-        int iDstp= 1;
+        
         ftfStpSize = new JFormattedTextField();
-        ftfStpSize.setValue(new Integer(iDstp));
+        ftfStpSize.setValue(new Integer(iSpStp));
          ftfStpSize.setColumns(4);
         spWindowPanel.add(ftfStpSize);
         
          spWindowPanel.add(new JLabel(" : "));
-        int iDsprng2= 750;
+        
         ftfSpectraWindowRng2 = new JFormattedTextField();
        
-        ftfSpectraWindowRng2.setValue(new Integer(iDsprng2));
+        ftfSpectraWindowRng2.setValue(new Integer(iSpR2));
         ftfSpectraWindowRng2.setColumns(4);
          spWindowPanel.add(ftfSpectraWindowRng2);
-         add(spWindowPanel,bc); 
+         
+        spWindowPanel.add(new JLabel("Remove Overlapping Spectra:"));
+        checkboxRmvOLSpec = new JCheckBox();
+        checkboxRmvOLSpec.setEnabled(true);
+        checkboxRmvOLSpec.setSelected(bRmOvSp);
+        spWindowPanel.add(checkboxRmvOLSpec);
+    
+        add(spWindowPanel,bc); 
+         
+       // JPanel pxCompPanel = new JPanel();
+        //pxCompPanel.setLayout(new FlowLayout());
         
         JPanel spSize = new JPanel();
         spSize.setLayout(new FlowLayout());
         
-          spSize.add(new  JLabel ("Fit Spectrum Width [nm]: "));
+        spSize.add(new JLabel("Advanced Settings"));
+        checkboxAdParams = new JCheckBox();
+        checkboxAdParams.setEnabled(true);
+        checkboxAdParams.setSelected(bAdSt);
+        spSize.add(checkboxAdParams);
+        //bc.gridy++;
+        //bc.anchor=GridBagConstraints.LINE_START;
+        //add(pxCompPanel,bc);
+        
+        
+        
+         spSize.add(new  JLabel ("Fit Spectrum Width [nm]: "));
         checkboxFitSpecWidth=new JCheckBox();
-        checkboxFitSpecWidth.setEnabled(true);
-        checkboxFitSpecWidth.setSelected(true);
+        //checkboxFitSpecWidth.setEnabled(true);
+        checkboxFitSpecWidth.setEnabled(false);
+        checkboxFitSpecWidth.setSelected(bFtSw);
+       
         spSize.add(checkboxFitSpecWidth);
-        double dDspw=40;
+       
         spSize.add(new  JLabel ("Average Spectrum Width [nm]: "));
         ftfSpecWidth = new JFormattedTextField();
-        ftfSpecWidth.setValue(new Double(dDspw));
+        ftfSpecWidth.setValue(new Double(iAvSw));
         ftfSpecWidth.setColumns(4);
         ftfSpecWidth.setEnabled(false);
         ftfSpecWidth.setEditable(false);
@@ -155,38 +192,61 @@ public class SpectraExtractionPanel extends JPanel {
         bc.gridy++;
         add(spSize,bc);
         
-         JPanel pxCompPanel = new JPanel();
+        JPanel pxCompPanel = new JPanel();
         pxCompPanel.setLayout(new FlowLayout());
         
         pxCompPanel.add(new JLabel("Localization Pixel Shift: +/-"));
-        int iDspsz= 1;
+        // spSize.add(new JLabel("Localization Pixel Shift: +/-"));
+        
         ftfBlinkingWidth = new JFormattedTextField();
-        ftfBlinkingWidth.setValue(new Integer(iDspsz));
+        ftfBlinkingWidth.setValue(new Integer(iLPS));
         ftfBlinkingWidth.setColumns(4);
+        ftfBlinkingWidth.setEditable(false);
+        ftfBlinkingWidth.setEnabled(false);
         pxCompPanel.add(ftfBlinkingWidth);
+        //spSize.add(ftfBlinkingWidth);
         
         pxCompPanel.add(new JLabel("Y-Compensation:"));
-        int iDyshf= 0;
+        // spSize.add(new JLabel("Y-Compensation:"));
+       
         ftfYShift = new JFormattedTextField();
-        ftfYShift.setValue(new Integer(iDyshf));
+        ftfYShift.setValue(new Integer(iYCmp));
         ftfYShift.setColumns(4);
+        ftfYShift.setEditable(false);
+        ftfYShift.setEnabled(false);
         pxCompPanel.add(ftfYShift);
+        // spSize.add(ftfYShift);
         
         bc.gridy++;
         add(pxCompPanel,bc);
+       // add(spSize,bc);
                      
         JPanel exPanel = new JPanel();
         exPanel.setLayout(new FlowLayout());
     
         
-         exPanel.add(new JLabel("Remove Overlapping Spectra:"));
+        /*exPanel.add(new JLabel("Remove Overlapping Spectra:"));
         checkboxRmvOLSpec = new JCheckBox();
         checkboxRmvOLSpec.setEnabled(true);
-        exPanel.add(checkboxRmvOLSpec);
+        exPanel.add(checkboxRmvOLSpec);*/
+       
+        buttonDefaults = new JButton("Reset");
+        buttonDefaults.setPreferredSize(d);
+        buttonDefaults.setEnabled(true);
+        exPanel.add(buttonDefaults);
+        
+         /*exPanel.add(new JLabel("Remove Overlapping Spectra:"));
+        checkboxRmvOLSpec = new JCheckBox();
+        checkboxRmvOLSpec.setEnabled(true);
+        checkboxRmvOLSpec.setSelected(bRmOvSp);
+        exPanel.add(checkboxRmvOLSpec);*/
+        
+        
         exPanel.add(buttonPreview);
         exPanel.add(buttonFindSpectra);
         
         bc.gridy++;
+        bc.anchor= GridBagConstraints.CENTER;
         add(exPanel,bc);
         //bc.gridy++;
                 
@@ -219,6 +279,28 @@ public class SpectraExtractionPanel extends JPanel {
     }
     
     private void setupListeners() {
+        
+        buttonDefaults.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ftfSpectraWindowRng1.setValue(iSpR1);
+                ftfSpectraWindowRng2.setValue(iSpR2);
+                ftfStpSize.setValue(iSpStp);
+                
+                checkboxFitSpecWidth.setSelected(bFtSw);
+                ftfSpecWidth.setValue(iAvSw);
+                
+                checkboxRmvOLSpec.setSelected(bRmOvSp);
+                
+                ftfBlinkingWidth.setValue(iLPS);
+                ftfYShift.setValue(iYCmp);
+                
+                checkboxAdParams.setSelected(bAdSt);
+                                
+                
+              }
+            
+                 
+        });
         buttonFindSpectra.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 
@@ -424,6 +506,30 @@ public class SpectraExtractionPanel extends JPanel {
             }
         });
              
+         checkboxAdParams.addActionListener(new ActionListener(){
+           public void actionPerformed(ActionEvent e){
+               
+               if (checkboxAdParams.isSelected()==true){
+                   checkboxFitSpecWidth.setEnabled(true);
+                   ftfYShift.setEnabled(true);
+                   ftfYShift.setEditable(true);
+                   
+                   ftfBlinkingWidth.setEditable(true);
+                   ftfBlinkingWidth.setEnabled(true);
+               }else{
+                  
+                  checkboxFitSpecWidth.setEnabled(false);
+                   ftfYShift.setEnabled(false);
+                   ftfYShift.setEditable(false);
+                   
+                   ftfBlinkingWidth.setEditable(false);
+                   ftfBlinkingWidth.setEnabled(false);
+               }
+                   
+                   
+           }
+        });  
+             
            
    
        checkboxFitSpecWidth.addActionListener(new ActionListener(){
@@ -447,7 +553,7 @@ public class SpectraExtractionPanel extends JPanel {
                 
                   try {
            
-            JDialog dialog = new JDialog(IJ.getInstance(), "RainbowSTORM Help(" + ver + ")");
+            JDialog dialog = new JDialog(IJ.getInstance(), "RainbowSTORM sSMLM Help(" + ver + ")");
             if(IJ.isJava17()) {
                 dialog.setType(Window.Type.UTILITY);
             }

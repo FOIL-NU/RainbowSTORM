@@ -60,6 +60,7 @@ public class sSMLMLambdaColoredRendering {
       
         public void renderTCImage(ArrayList<Blinking> BEs,int[] nRng, ArrayList<Color> cols) {
            int sz=BEs.size();
+           if(sz>0){
            for (int i=0;i<sz;i++){
               
               updateProgress(i,sz);
@@ -72,12 +73,15 @@ public class sSMLMLambdaColoredRendering {
               this.drawPoint(xpos,ypos,col);
         
           }
+         }
   
     }
         
         
      public void renderTCROI(ArrayList<Blinking> BEs,int[] nRng, ArrayList<Color> cols,int xmin, int ymin) {
            int sz=BEs.size();
+           
+         if(sz>0){  
         
          for (int i=0;i<sz;i++){
               updateProgress(i,sz);
@@ -100,6 +104,7 @@ public class sSMLMLambdaColoredRendering {
       out.setTitle("sSMLM Pseudo-Colored ScatterRendering");
       out.show();
       this.drawLegend(nRng,cols);
+         }
    
     }
      
@@ -110,6 +115,8 @@ public class sSMLMLambdaColoredRendering {
       public void renderTCGaussianROI(ArrayList<Blinking> BEs,int[] nRng, ArrayList<Color> cols,int xmin, int ymin, int mxunc) {
         
           int sz=BEs.size();
+          
+          if(sz>0){
          
             int im_sz2=nRng.length;
            
@@ -193,7 +200,7 @@ public class sSMLMLambdaColoredRendering {
       this.drawLegend(nRng,cols);
      
           
-            
+          }      
       
     }
      
@@ -508,7 +515,7 @@ public class sSMLMLambdaColoredRendering {
 			}
 		}
              
-		ImagePlus plegend = new ImagePlus("Legend", iplegend); 
+		ImagePlus plegend = new ImagePlus("sSMLM Legend", iplegend); 
 		plegend.show();
                 ImageCanvas ic = new ImageCanvas(plegend);
               

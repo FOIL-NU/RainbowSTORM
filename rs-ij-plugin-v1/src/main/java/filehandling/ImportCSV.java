@@ -31,9 +31,7 @@ public class ImportCSV {
     
      public ArrayList<String[]> importCSV(String fname,String dir, JFrame frame) throws IOException,FileNotFoundException,NullPointerException, IndexOutOfBoundsException{
          
-        //File f = new File(fname);
-        //String d =f.
-         
+    
         ArrayList<String[]> data= new ArrayList<String[]>();
         
         if (dir != null) {
@@ -45,39 +43,28 @@ public class ImportCSV {
             }
         } else {
             fc = new JFileChooser(ij.io.OpenDialog.getLastDirectory());
+            if (!fname.isEmpty()){
+                
+                fc.setSelectedFile(new File(fname));
+            }
         }
   
-        
         int returnVal = fc.showOpenDialog(frame);
-        
-    
-        
-        
         
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
             dirName =file.getParent();
-           // String fpath= file.getAbsolutePath()
             filename = file.getAbsolutePath();
             try {
                
                  CSVReader reader = new CSVReader(new FileReader(file));
                  String[] nextLine;
-
-                
-                // Read the first row, which has the column names.
-                //String[] columnNames = reader.readNext();
-                // Create a model with 0 rows. Note: table will only show if columnNames are defined
-                //DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0);
-                
+            
                 int cnt= 0;
                 // Add the remaining data, reading the CSV line by line.
                 while ((nextLine = reader.readNext()) != null) {
                 data.add(nextLine);
-                    
-                   
-                //System.out.println(nextLine[1]);
-               
+                  
                 cnt++;
                 }
                 reader.close();
@@ -94,6 +81,12 @@ public class ImportCSV {
             }
             
         }
+        
+       /* if(returnVal == JFileChooser.CANCEL_OPTION||returnVal ==JFileChooser.ABORT){
+          fc.cancelSelection();
+            
+        }*/
+        
             return data;          
      }
      

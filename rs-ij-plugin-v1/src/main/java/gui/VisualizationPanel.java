@@ -46,6 +46,7 @@ import java.awt.Window;
 import java.net.URL;
 
 import java.util.Collections;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.WindowConstants;
@@ -115,10 +116,13 @@ public class VisualizationPanel extends JPanel {
      private JButton buttonDriftCorrect;
      private JButton buttonSaveSpectra;
      private JButton buttonUpdateImage;
-    private JTextField textfieldSaveSpectraFilename;
-    private boolean dataImported;
+     private JTextField textfieldSaveSpectraFilename;
+     private boolean dataImported;
      private boolean is3DData;
+     
+     private JCheckBox checkboxCloseAll;
     
+     
     
        public VisualizationPanel(Analysis controller,boolean isImportScreen,boolean is3D,double[] cens,double[] phts, float[] avg_sp,int[] fy,ArrayList<float[]> specs){
       
@@ -356,55 +360,69 @@ public class VisualizationPanel extends JPanel {
               
                 visThresP= new JPanel();
                 
-                int w1=750;
+               /* int w1=750;
                 int h1= 100;
                 Dimension d2 =new Dimension(w1,h1);
-                visThresP.setPreferredSize(d2);
+                visThresP.setPreferredSize(d2);*/
                 JPanel tmp=new VisThresPanel(controller, dataImported);
                 visThresP.add(tmp);
-                  visFields.add(visThresP,sc);
-                  sc.gridy++;
-                  
-                 JPanel spSavePanel=new JPanel();
+                visFields.add(visThresP,sc);
+                add(visFields,mc);
+                mc.gridy++;
+                mc.gridy++;
+                mc.gridy++;
+                
+                JPanel closePanel=new JPanel();
+                closePanel.setLayout(new FlowLayout());
+           
+                      
+                
+                closePanel.add(new JLabel("Close All RainbowSTORM Windows:"));
+                checkboxCloseAll = new JCheckBox();
+                checkboxCloseAll.setEnabled(true);
+                checkboxCloseAll.setSelected(true);
+                closePanel.add(checkboxCloseAll);
+                
+                mc.anchor=GridBagConstraints.LAST_LINE_START;
+                add(closePanel,mc);
+                
+                JPanel spSavePanel=new JPanel();
                 spSavePanel.setLayout(new FlowLayout());
-        
-     
+                
                 spSavePanel.add(new JLabel("File Path: "));
-        
                 textfieldSaveSpectraFilename = new JTextField(20);
                 spSavePanel.add(textfieldSaveSpectraFilename);
                 buttonSaveSpectra = new JButton("Save Spectroscopic Data");
                 buttonSaveSpectra.setEnabled(true);
                 spSavePanel.add(buttonSaveSpectra);
-                visFields.add(spSavePanel,sc);
-            
-                add(visFields,mc);
-                  mc.anchor=GridBagConstraints.LAST_LINE_END;
-        
-         JPanel helpPanel = new JPanel();
-        helpPanel.setLayout(new FlowLayout());
-        URL loc;
-        try {
-        loc = getClass().getClassLoader().getResource("helpbutton.png");
-       
-       ImageIcon img_icon =new ImageIcon(loc);
-       Image img = img_icon.getImage();
-       
-       Image newimg = img.getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH); // scale it the smooth way 
-       img_icon = new ImageIcon(newimg); 
-       
-       
-        buttonHelp =new JButton(img_icon);
-        buttonHelp.setEnabled(true);
-        buttonHelp.setPreferredSize(new Dimension (20,20));
-        helpPanel.add(buttonHelp);
-        //bc.gridy=bc.gridy++;
-        mc.anchor=GridBagConstraints.LAST_LINE_END;
-        
-       add(helpPanel, mc);
-        } catch (Exception ex) {
-            Logger.getLogger(VisualizationPanel.class.getName()).log(Level.SEVERE, null, ex);
-        }
+                
+                mc.anchor=GridBagConstraints.CENTER;
+                add(spSavePanel,mc);
+               
+                JPanel helpPanel = new JPanel();
+                helpPanel.setLayout(new FlowLayout());
+                URL loc;
+                try {
+                loc = getClass().getClassLoader().getResource("helpbutton.png");
+
+               ImageIcon img_icon =new ImageIcon(loc);
+               Image img = img_icon.getImage();
+
+               Image newimg = img.getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH); // scale it the smooth way 
+               img_icon = new ImageIcon(newimg); 
+
+
+                buttonHelp =new JButton(img_icon);
+                buttonHelp.setEnabled(true);
+                buttonHelp.setPreferredSize(new Dimension (20,20));
+                helpPanel.add(buttonHelp);
+               
+               mc.anchor=GridBagConstraints.LAST_LINE_END;
+
+               add(helpPanel, mc);
+                } catch (Exception ex) {
+                    Logger.getLogger(VisualizationPanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
          
         
     }
@@ -496,7 +514,7 @@ public class VisualizationPanel extends JPanel {
                      cbcFrame.setIconImage(IJ.getInstance().getIconImage());
                      JPanel cbcPanel =new JPanel();
                      cbcPanel.add(new VisbyClassPanel(controller,cbcFrame));
-                     
+                     cbcFrame.setTitle("Classification");
                      cbcFrame.getContentPane().add(cbcPanel);
                      cbcFrame.pack();
                      cbcFrame.setVisible(true);
@@ -558,7 +576,7 @@ public class VisualizationPanel extends JPanel {
             }
         });
            
-            buttonSaveSpectra.addActionListener(new ActionListener() {
+           buttonSaveSpectra.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
                     if(is3DData){
@@ -572,12 +590,12 @@ public class VisualizationPanel extends JPanel {
             }
         });
             
-                   buttonHelp.addActionListener(new ActionListener() {
+            buttonHelp.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 
                   try {
            
-            JDialog dialog = new JDialog(IJ.getInstance(), "RainbowSTORM Help(" + ver + ")");
+            JDialog dialog = new JDialog(IJ.getInstance(), "RainbowSTORM sSMLM Help(" + ver + ")");
             if(IJ.isJava17()) {
                 dialog.setType(Window.Type.UTILITY);
             }
@@ -653,6 +671,7 @@ public class VisualizationPanel extends JPanel {
         ArrayList<float[]> spectra= new ArrayList<float[]>();
        
         int sp_sz=0;
+        if(BEs.size()>0){
          Blinking t_bE=BEs.get(0);
          float [] tmp_spec=t_bE.getSpectrum();
          sp_sz=tmp_spec.length;
@@ -791,12 +810,13 @@ public class VisualizationPanel extends JPanel {
                 updateImgs();
                 IJ.log("Charts Updated");  
       
-      
+        }
       
      } 
      
  public void updateImgs(){
       Thread processThread =new Thread(){
+                    @Override
                     public void run(){
                           IJ.log("Crop vals: "+imVals[0]+" "+imVals[1]+" "+imVals[2]+" "+imVals[3]+" "+imVals[4]+" "+imVals[5]+ " "+imVals[6]);
       controller.drawTCGaussianROI(cBEs,imVals[0],imVals[1],imVals[2],imVals[3],imVals[4],imVals[5],imVals[6]);
@@ -804,6 +824,10 @@ public class VisualizationPanel extends JPanel {
        }
                 };
                 processThread.start();
+ }
+ 
+ public boolean getCloseAll(){
+     return checkboxCloseAll.isSelected();
  }
 
     

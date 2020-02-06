@@ -26,7 +26,6 @@ import javax.swing.JPanel;
 
 import java.io.File;
 import javax.swing.JFileChooser;
-import javax.swing.table.DefaultTableModel;
 
 import au.com.bytecode.opencsv.*;
 import gui.SpatialImageParameterPanel;
@@ -134,10 +133,13 @@ public class Analysis implements PlugIn {
     JFileChooser fc2;
     JFileChooser fc;
     JPanel mainPanel;
+     JFrame  compPlot;
     ArrayList<Blinking> blinkings;
     ArrayList<Blinking> curBlinkings;
     ArrayList<Blinking> currentBEs;
     ArrayList<Blinking> oldBEs;
+   // ArrayList<Integer> oldIDs;
+    //ArrayList<Integer> curIDs;
     ImagePlus zeroOrderImage;
     ImagePlus firstOrderImage;
     ImagePlus firstOrderImage_bk;
@@ -146,7 +148,7 @@ public class Analysis implements PlugIn {
     ImagePlus backgroundImage;
     ImagePlus spectralImage;
     ImagePlus bkImage;
-    
+    VisualizationPanel vPanel;
     
     private int cID;
 
@@ -166,6 +168,7 @@ public class Analysis implements PlugIn {
     private double mx_y;
     private double mx_fr;
     
+    private boolean closeFlg;
     private double px_shift;
     private double sp_disp;
     private boolean caliLoaded;
@@ -743,15 +746,72 @@ public class Analysis implements PlugIn {
                 mc.gridy=0;
                 mc.weightx=1;
                 mc.weighty=1;
-             
-                mainVP.add(new VisualizationPanel(this,isImport,is3D,cens,phts,avg_sp,fy,spectra),mc);
+                vPanel= new VisualizationPanel(this,isImport,is3D,cens,phts,avg_sp,fy,spectra);
+               // mainVP.add(new VisualizationPanel(this,isImport,is3D,cens,phts,avg_sp,fy,spectra),mc);
+               mainVP.add(vPanel,mc);
                 pcSupport.firePropertyChange(Analysis.UPDATE_STATS, false, true);
                 mainVP.validate();
                 visFrame.setResizable(false);
                 visFrame.getContentPane().add(mainVP);
                 visFrame.pack();
                 visFrame.setVisible(true);
+                visFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                
+               
+                visFrame.addWindowListener(new WindowAdapter() { 
+                    @Override public void windowClosing(WindowEvent e)
+                    {
+                        closeVisScreen();
+                    }
+                });
+                
+              
           
+    }
+    
+    public void closeVisScreen(){
+        closeFlg= vPanel.getCloseAll();
+        if(closeFlg){
+          
+            String[] titles= WindowManager.getImageTitles();
+            for(int vt=0;vt<titles.length;vt++){
+               
+                        if(titles[vt].contains("sSMLM")){  
+                        IJ.log(titles[vt]);
+                        
+                       
+                        IJ.selectWindow(titles[vt]);
+                        IJ.run("Close");
+                        
+                        }
+       
+            }
+            
+          
+            //IJ.sel
+             String[] titles2= WindowManager.getNonImageTitles();
+            for(int yt=0;yt<titles2.length;yt++){
+              
+                        if(titles2[yt].contains("sSMLM")){    
+                           IJ.log(titles2[yt]);  
+                            if(titles2[yt].contains("Multi-Channel Plots")){
+                            compPlot.dispose();
+                        }else{
+                           
+                        IJ.selectWindow(titles2[yt]);
+                       
+                        IJ.run("Close");
+                            }
+                        }
+       
+            }
+            
+            
+        }else{
+        
+        visFrame.dispose();
+    }
+        
     }
     
     
@@ -1295,7 +1355,9 @@ public class Analysis implements PlugIn {
        
         double conv=getPixelSize()+0.5;
         
+        ArrayList<Integer> ids = new ArrayList<Integer>();
         ArrayList<Blinking> n_BEs= new ArrayList<Blinking>();
+        int cnt=1;
         for( int i=0;i<sz;i++){
             Blinking bE=n_blinkings.get(i);
             
@@ -1337,10 +1399,13 @@ public class Analysis implements PlugIn {
             if (is3D){
                  n_be=  new Blinking(tmp_f,tmp_x,tmp_y,tmp_z,tmp_stph,tmp_stpsig,tmp_stpsig2,
                     tmp_stpunc,tmp_c,tmp_ph,tmp_bkph,tmp_bkpx,tmp_spesig,tmp_speunc,t_spec);
+                 
+                 
             }else{
               n_be=  new Blinking(tmp_f,tmp_x,tmp_y,tmp_stph,tmp_stpsig,
                     tmp_stpunc,tmp_c,tmp_ph,tmp_bkph,tmp_bkpx,tmp_spesig,tmp_speunc,t_spec);
             }
+            ids.add(cnt);
             n_BEs.add(n_be); 
             frms.add(tmp_f);
        
@@ -1360,6 +1425,7 @@ public class Analysis implements PlugIn {
             unc_spe.add(tmp_speunc);
             
             spectra.add(t_spec);
+            cnt++;
           
             }
          
@@ -1371,34 +1437,26 @@ public class Analysis implements PlugIn {
         double[] yps= ArrayUtils.toPrimitive(ypos.toArray(new Double[cn_sz]));
         double[] cens= ArrayUtils.toPrimitive(centroids.toArray(new Double[cn_sz]));
         double [] uncs= ArrayUtils.toPrimitive(loc_unc.toArray(new Double[cn_sz]));  
-       /* double[]phts= ArrayUtils.toPrimitive(photons.toArray(new Double[cn_sz]));
-        double[] bk_phts= ArrayUtils.toPrimitive(bk_pnum.toArray(new Double[cn_sz]));
-        double[] bk_pxs= ArrayUtils.toPrimitive(bk_px.toArray(new Double[cn_sz]));
-        double[] unc_spec =ArrayUtils.toPrimitive(unc_spe.toArray(new Double[cn_sz]));*/
-   
+       
        
          Max mx_Val = new Max();
          int mx1=(int) round(mx_Val.evaluate(cens,0,cn_sz));
          int mxunc=(int) round(mx_Val.evaluate(uncs,0,cn_sz))+1;
          int xmax=(int) round(mx_Val.evaluate(xps,0,cn_sz))+mxunc;
          int ymax=(int) round(mx_Val.evaluate(yps,0,cn_sz))+mxunc;
-         
-         //IJ.log("Upper:" +mx1);
+        
           Min mn_Val = new Min();
           int mn1=(int) round(mn_Val.evaluate(cens,0,cn_sz));
           int xmin=(int) round(mn_Val.evaluate(xps,0,cn_sz))-mxunc;
           int ymin=(int) round(mn_Val.evaluate(yps,0,cn_sz))-mxunc;
-         // IJ.log("Lower:" +mn1);
-       
-         
+                 
           int wid=(int) ((xmax-xmin)/conv);
           int hei=(int) ((ymax-ymin)/conv);
           this.drawTCGaussianROI(n_BEs,mn1,mx1,wid,hei,xmin,ymin,mxunc);
         
                   currentBEs=n_BEs;
                   oldBEs =n_BEs;
-                 // IJ.log("oldbes:"+oldBEs.size());
-                 // IJ.log("currbes:"+currentBEs.size());
+                  
        
        this.launchVisualization(n_BEs,fy,false);
        
@@ -1580,37 +1638,7 @@ public class Analysis implements PlugIn {
         
     }
     
-    public void applyPhotonThreshold(int ph_Rng1){
-        ArrayList<Blinking> n_BEs = new ArrayList<Blinking>();
-        int cnt=0;
-        int sz= currentBEs.size();
-       
-        for( int i=0;i<sz;i++){
-            Blinking bE=currentBEs.get(i);
-            
-            double tmp_ph=bE.getPhotons();
-           
-            Double db= Math.abs(tmp_ph);
-            boolean flg1 =db>ph_Rng1;
-           
-            if (flg1){
-           
-            n_BEs.add(bE);    
-           
-            cnt++;
-            }else{
-           
-           
-            }
-                 }
-            updateVisData(n_BEs);
-    }
-    
-       public void applyCWThreshold(int cw_Rng1,int cw_Rng2){
-        ArrayList<Blinking> n_BEs = filterbyCW(cw_Rng1,cw_Rng2,currentBEs); 
-        
-       updateVisData(n_BEs);
-    }
+   
        
     
       public void applyROI(int[] cropPositions){
@@ -1622,10 +1650,12 @@ public class Analysis implements PlugIn {
     }  
        
        public ArrayList<Blinking> filterbyROI(int[] cropPositions,ArrayList<Blinking> curBEs){
-        int mag=getMag();//Integer.parseInt(gui.VisSettingsPanel.ftfMag.getText());
+        int mag=getMag();
         double pixSz=this.getPxSize()+0.5;
-        double res= pixSz/mag;//Double.parseDouble(gui.SpatialImageParameterPanel.ftfPixSize.getText())/mag;   
+        double res= pixSz/mag; 
         ArrayList<Blinking> n_BEs = new ArrayList<Blinking>();
+        ArrayList<Integer> n_ids = new ArrayList<Integer>();
+        
         int xthres1=cropPositions[0];
         int ythres1=cropPositions[1];
         
@@ -1637,7 +1667,7 @@ public class Analysis implements PlugIn {
         IJ.log("Old Size:"+sz);
         for( int i=0;i<sz;i++){
             Blinking bE=curBEs.get(i);
-            
+           // int id=curIDs.get(i);
             double tmp_x=bE.getXPosition()/res;
             double tmp_y=bE.getYPosition()/res;
             
@@ -1655,20 +1685,18 @@ public class Analysis implements PlugIn {
             boolean flg=(flgx&&flgy);
             if (flg){
            
-            n_BEs.add(bE);    
+            n_BEs.add(bE); 
+           // n_ids.add(id);
            
             cnt++;
-            }else{
-            
-           
             }
          
             
         }
         int rsz= n_BEs.size();
-         IJ.log("ROI Current Size:"+rsz);
-        
-        
+       
+       // curIDs.clear();
+        //curIDs=n_ids;
         return n_BEs;
            
            
@@ -1777,16 +1805,10 @@ public class Analysis implements PlugIn {
          }
          
          
-         //int width=wid*mag;
-         //int height=hei*mag;
-        
          double resolution=conv/mag;
          
-        int d_width = (int) ((width ));//+(2*resolution));
-        int d_height = (int) ((height));//+(2*resolution));
-        
-       // System.out.println("Blinking Image Width: " + d_width);
-        //System.out.println("Blinking Image Height: " +d_height);
+        int d_width = (int) ((width ));
+        int d_height = (int) ((height));
          
         ImageStack stack = new ImageStack(d_width,d_height); 
          
@@ -1888,7 +1910,7 @@ public class Analysis implements PlugIn {
           break;
         }
        
-        String sch="C"+Integer.toString(cnt+1);
+        String sch="sSMLM C"+Integer.toString(cnt+1);
         String t_c;
         Color tmp_c ;
         switch(k){
@@ -1938,6 +1960,7 @@ public class Analysis implements PlugIn {
            lut.min=ch.getMin();
            lut.max=ch.getMax();  
            t_im.setLut(lut);
+           
            t_im.show();
         }
                
@@ -1961,7 +1984,7 @@ public class Analysis implements PlugIn {
         }
         
       
-      ImagePlus fin = new ImagePlus("Pseudo-Colored sSMLM ",stack);
+      ImagePlus fin = new ImagePlus("Multi-Color sSMLM ",stack);
        CompositeImage imgs2= new CompositeImage(fin,IJ.COMPOSITE);
         
        for(int j=0;j<nActive;j++){
@@ -1993,12 +2016,13 @@ public class Analysis implements PlugIn {
        outPanel.add(cenPanel);
        outPanel.add(histPanel);
       
-      JFrame compPlot = new JFrame("Multi-Channel Plots");
+       compPlot = new JFrame("sSMLM Multi-Channel Plots");
        compPlot.setIconImage(IJ.getInstance().getIconImage());
-      compPlot.getContentPane().add(outPanel);
-      compPlot.setResizable(false);
-      compPlot.pack();
-      compPlot.setVisible(true);
+       compPlot.getContentPane().add(outPanel);
+       compPlot.setResizable(false);
+       compPlot.pack();
+       compPlot.setVisible(true);
+       WindowManager.addWindow(compPlot);
       
      }  
    
@@ -2119,6 +2143,9 @@ public class Analysis implements PlugIn {
         currentBEs=oldBEs;
         int o_sz2=currentBEs.size();
         
+        // curIDs.clear();
+        // curIDs=oldIDs;
+        
         IJ.log("Updated Data:"+o_sz2);
         postProcessString="";
         crp_Pos=null;
@@ -2143,28 +2170,6 @@ public class Analysis implements PlugIn {
        return fy;
         }
   
-    /*public void findBlinkingSpectra(int spectrumAverageSize) {
-        this.blinkingImage = IJ.createImage("Blinkings", "16-bit", this.firstOrderImage.getProcessor().getWidth(), this.blinkings.size(), 1);
-        ImageProcessor blinkingProcessor = this.blinkingImage.getProcessor();
-        
-     
-        int currentRow = 0;
-        for (Blinking blinking : this.blinkings) {
-            float[] spectrum = blinking.findSpectrum(this.firstOrderImage, spectrumAverageSize);
-            // IJ.log("Spectrum Width: " + spectrum.length);
-            blinkingProcessor.putRow(0, currentRow, spectrum, spectrum.length);
-            currentRow++;
-        }
-
-        SwingUtilities.invokeLater(new Runnable(){
-            public void run() {
-                CustomSpectraWindow csw = new CustomSpectraWindow(blinkingImage);
-            }
-        });
-        
-        pcSupport.firePropertyChange(Localization.SPECTRA_READY, false, true);
-    }*/
-    
     public void setDefaults(){
     postProcessString ="";    
     magnification =5;
@@ -2192,7 +2197,7 @@ public class Analysis implements PlugIn {
                 
         for(int i =0; i<BEs.size();i++){
                 Blinking bEvent =BEs.get(i);
-                String id_name= Integer.toString(i);
+                String id_name= Integer.toString(i+1);
                 String fr_prm = Double.toString(bEvent.getFrame());
                 String x_prm = Double.toString(bEvent.getXPosition());
                 String y_prm = Double.toString(bEvent.getYPosition());
@@ -2246,7 +2251,7 @@ public class Analysis implements PlugIn {
                 
         for(int i =0; i<BEs.size();i++){
                 Blinking bEvent =BEs.get(i);
-                String id_name= Integer.toString(i);
+                String id_name= Integer.toString(i+1);
                 String fr_prm = Double.toString(bEvent.getFrame());
                 String x_prm = Double.toString(bEvent.getXPosition());
                 String y_prm = Double.toString(bEvent.getYPosition());
@@ -2291,13 +2296,13 @@ public class Analysis implements PlugIn {
             switch(selH){
             
             case 0:
-                t_c =("id");
+                t_c =("sSMLM id");
             
                 double[] id = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
                  
-                 id[i]= i+1;
+                 id[i]=i+1;//curIDs.get(i);
                  
                 }
           FloatProcessor id_histogram =new FloatProcessor(1,sz,id);
@@ -2309,7 +2314,7 @@ public class Analysis implements PlugIn {
           IJ.log(t_c);
              break;
              case 1:
-                t_c =("frame");
+                t_c =("sSMLM frame");
                 double[] fr = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2328,7 +2333,7 @@ public class Analysis implements PlugIn {
              break;
                case 2:
               
-                t_c =("x");
+                t_c =("sSMM x");
                    double[] x= new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2344,7 +2349,7 @@ public class Analysis implements PlugIn {
          
              break;
                case 3:
-                 t_c =("y");
+                 t_c =("sSMLM y");
                     double[] y = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2360,7 +2365,7 @@ public class Analysis implements PlugIn {
            
              break;
              case 4:
-                 t_c =("z");
+                 t_c =("sSMLM z");
                     double[] z = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2378,7 +2383,7 @@ public class Analysis implements PlugIn {
              
                case 5:
                 
-                t_c =("spatial_photons");
+                t_c =("sSMLM spatial_photons");
                 
                 double[] psfPh = new double[sz];
                 for( int i=0;i<sz;i++){
@@ -2396,7 +2401,7 @@ public class Analysis implements PlugIn {
              break;
               case 6:
                 
-                t_c =("spatial_sig1");
+                t_c =("sSMLM spatial_sig1");
                      double[] psfSig = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2413,7 +2418,7 @@ public class Analysis implements PlugIn {
              break;
               case 7:
                 
-                t_c =("spatial_sig2");
+                t_c =("sSMLM spatial_sig2");
                      double[] psfSig2 = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2431,7 +2436,7 @@ public class Analysis implements PlugIn {
              
              case 8:
                 
-                t_c =("loc_unc");
+                t_c =("sSMLM loc_unc");
                 double[] unc = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2448,7 +2453,7 @@ public class Analysis implements PlugIn {
              break;
               case 9:
                 
-                t_c =("spec_centroid");
+                t_c =("sSMLM spec_centroid");
                 double[] cen = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2466,7 +2471,7 @@ public class Analysis implements PlugIn {
              
               case 10:
                 
-                t_c =("spec_photons");
+                t_c =("sSMLM spec_photons");
                 double[] ph= new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2483,7 +2488,7 @@ public class Analysis implements PlugIn {
              break;
               case 11:
                 
-                t_c =("(spec_bkphotons");
+                t_c =("(sSMLM spec_bkphotons");
                 double[] bkPh = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2501,7 +2506,7 @@ public class Analysis implements PlugIn {
              break;
               case 12:
                 
-                t_c =("spec_bk photons/px");
+                t_c =("sSMLM spec_bk photons/px");
              
                 double[] bkPx = new double[sz];
                 for( int i=0;i<sz;i++){
@@ -2519,7 +2524,7 @@ public class Analysis implements PlugIn {
              break;
               case 13:
                 
-                t_c =("spec_sig");
+                t_c =("sSMLM spec_sig");
                double[] speSig = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2536,7 +2541,7 @@ public class Analysis implements PlugIn {
              break;
               case 14:
                 
-                t_c =("spec_unc");
+                t_c =("sSMLM spec_unc");
                 double[] speUnc = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2574,7 +2579,7 @@ public class Analysis implements PlugIn {
            switch(selH){
             
             case 0:
-                t_c =("id");
+                t_c =("sSMLM id");
             
                 double[] id = new double[sz];
                 for( int i=0;i<sz;i++){
@@ -2591,7 +2596,7 @@ public class Analysis implements PlugIn {
          
              break;
              case 1:
-                t_c =("frame");
+                t_c =("sSMLM frame");
                 double[] fr = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2608,7 +2613,7 @@ public class Analysis implements PlugIn {
              break;
                case 2:
               
-                t_c =("x");
+                t_c =("sSMLM x");
                    double[] x= new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2624,7 +2629,7 @@ public class Analysis implements PlugIn {
         
              break;
                case 3:
-                 t_c =("y");
+                 t_c =("sSMLM y");
                     double[] y = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2641,7 +2646,7 @@ public class Analysis implements PlugIn {
              break;
                case 4:
                 
-                t_c =("spatial_photons");
+                t_c =("sSMLM spatial_photons");
                 
                 double[] psfPh = new double[sz];
                 for( int i=0;i<sz;i++){
@@ -2660,7 +2665,7 @@ public class Analysis implements PlugIn {
              break;
               case 5:
                 
-                t_c =("spatial_sig");
+                t_c =("sSMLM spatial_sig");
                 double[] psfSig = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2677,7 +2682,7 @@ public class Analysis implements PlugIn {
              break;
              case 6:
                 
-                t_c =("loc_unc");
+                t_c =("sSMLM loc_unc");
                 double[] unc = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2694,7 +2699,7 @@ public class Analysis implements PlugIn {
              break;
               case 7:
                 
-                t_c =("spec_centroid");
+                t_c =("sSMLM spec_centroid");
                 double[] cen = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2712,7 +2717,7 @@ public class Analysis implements PlugIn {
              
               case 8:
                 
-                t_c =("spec_photons");
+                t_c =("sSMLM spec_photons");
                 double[] ph= new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2729,7 +2734,7 @@ public class Analysis implements PlugIn {
              break;
               case 9:
                 
-                t_c =("(spec_bkphotons");
+                t_c =("sSMLM spec_bkphotons");
                 double[] bkPh = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2746,7 +2751,7 @@ public class Analysis implements PlugIn {
              break;
               case 10:
                 
-                t_c =("spec_bk photons/px");
+                t_c =("sSMLM spec_bk photons/px");
              
                 double[] bkPx = new double[sz];
                 for( int i=0;i<sz;i++){
@@ -2764,7 +2769,7 @@ public class Analysis implements PlugIn {
              break;
               case 11:
                 
-                t_c =("spec_sig");
+                t_c =("sSMLM spec_sig");
                double[] speSig = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2782,7 +2787,7 @@ public class Analysis implements PlugIn {
              break;
               case 12:
                 
-                t_c =("spec_unc");
+                t_c =("sSMLM spec_unc");
                 double[] speUnc = new double[sz];
                 for( int i=0;i<sz;i++){
                  Blinking bE=curBEs.get(i);
@@ -2812,6 +2817,10 @@ public class Analysis implements PlugIn {
         boolean ifrm_flg=false; 
         ArrayList<Blinking> curBEs=currentBEs;
         ArrayList<Blinking> n_BEs = new ArrayList<Blinking>();
+        
+        //ArrayList<Integer> cIDs = this.curIDs;
+        //ArrayList<Integer> n_IDs = new ArrayList<Integer>();
+        
         int sz= curBEs.size();
         int cnt=0;
         String t_c;
@@ -2823,6 +2832,28 @@ public class Analysis implements PlugIn {
                 t_c =("id");
                 ifrm_flg=true;
                 str_units="";
+                     cnt=0;
+   
+       
+        for( int i=0;i<sz;i++){
+            Blinking bE=curBEs.get(i);
+            //int id=cIDs.get(i);
+                      
+            Double cw= (double) Math.abs(i+1);
+            boolean flg1 =cw>=t1;
+            boolean flg2=cw<=t2;
+           if (flg1&&flg2){
+           
+            n_BEs.add(bE);  
+           // n_IDs.add(id);
+           
+            cnt++;
+            }    
+        }
+         updateVisData(n_BEs);
+         //Update cIds
+         
+        
                      
           IJ.log(t_c);
              break;
@@ -3199,21 +3230,49 @@ public class Analysis implements PlugIn {
     
      public void applyFilter3D(int selH, double t1, double t2){
         
-        ArrayList<Blinking> curBEs=currentBEs;
+        ArrayList<Blinking> curBEs=currentBEs;        
         ArrayList<Blinking> n_BEs = new ArrayList<Blinking>();
+       // ArrayList<Integer> cIDs = this.curIDs;
+        //ArrayList<Integer> n_IDs = new ArrayList<Integer>();
         int sz= curBEs.size();
         int cnt=0;
         String t_c;
+        String str_units;
    
            switch(selH){
             
             case 0:
-                t_c =("id");
+            t_c =("id");
+            str_units="";
+            cnt=0;
+   
+       
+        for( int i=0;i<sz;i++){
+            Blinking bE=curBEs.get(i);
+            //int id=cIDs.get(i);
+            //double tmp_cw=bE.getFrame();
+           
+            Double cw= (double) Math.abs(i+1);
+            boolean flg1 =cw>=t1;
+            boolean flg2=cw<=t2;
+           if (flg1&&flg2){
+           
+            n_BEs.add(bE);  
+           // n_IDs.add(id);
+           
+            cnt++;
+            }else{
+                      
+            }
+                   
+        }
+         updateVisData(n_BEs);
+         
         
              break;
              case 1:
              t_c =("frame");
-                     
+             str_units="";      
              cnt=0;
    
        
@@ -3239,7 +3298,7 @@ public class Analysis implements PlugIn {
          
              break;
                case 2:
-              
+              str_units=" nm";
                 t_c =("x");
          cnt=0;
       
@@ -3269,6 +3328,7 @@ public class Analysis implements PlugIn {
              break;
                case 3:
                  t_c =("y");
+                 str_units=" nm";
                     cnt=0;
         
         for( int i=0;i<sz;i++){
@@ -3294,6 +3354,7 @@ public class Analysis implements PlugIn {
              break;
              case 4:
                  t_c =("z");
+                 str_units=" nm";
                     cnt=0;
         
         IJ.log("Old Size:"+sz);
@@ -3321,6 +3382,7 @@ public class Analysis implements PlugIn {
              break;
                case 5:
                  t_c =("PSF photons");
+                 str_units="";
                  cnt=0;
        
         for( int i=0;i<sz;i++){
@@ -3346,6 +3408,7 @@ public class Analysis implements PlugIn {
               case 6:
                 
                 t_c =("PSF sigma1");
+                str_units=" nm";
                   cnt=0;
         
         IJ.log("Old Size:"+sz);
@@ -3375,6 +3438,7 @@ public class Analysis implements PlugIn {
                case 7:
                 
                 t_c =("PSF sigma2");
+                str_units=" nm";
                   cnt=0;
         
         for( int i=0;i<sz;i++){
@@ -3385,17 +3449,13 @@ public class Analysis implements PlugIn {
             Double cw= Math.abs(tmp_cw);
             boolean flg1 =cw>=t1;
             boolean flg2=cw<=t2;
-            //flg1&&flg2
+            
             if (flg1&&flg2){
            
             n_BEs.add(bE);    
            
             cnt++;
-            }else{
-          
-           
             }
-         
             
         }
          updateVisData(n_BEs);
@@ -3404,6 +3464,7 @@ public class Analysis implements PlugIn {
              case 8:
                 
                 t_c =("localization uncertainty");
+                str_units=" nm";
                   cnt=0;
        
         for( int i=0;i<sz;i++){
@@ -3419,10 +3480,7 @@ public class Analysis implements PlugIn {
             n_BEs.add(bE);    
            
             cnt++;
-            }else{
-            
             }
-         
         }
          updateVisData(n_BEs);
          
@@ -3430,6 +3488,7 @@ public class Analysis implements PlugIn {
               case 9:
                 
                 t_c =("spectral centroid");
+                str_units=" nm";
                   cnt=0;
        
         for( int i=0;i<sz;i++){
@@ -3440,16 +3499,13 @@ public class Analysis implements PlugIn {
             Double cw= Math.abs(tmp_cw);
             boolean flg1 =cw>=t1;
             boolean flg2=cw<=t2;
-            //flg1&&flg2
+           
             if (flg1&&flg2){
            
             n_BEs.add(bE);    
            
             cnt++;
-            }else{
-           
             }
-         
             
         }
          updateVisData(n_BEs);
@@ -3459,6 +3515,7 @@ public class Analysis implements PlugIn {
               case 10:
                 
                 t_c =("spectral photons");
+                str_units="";
                  cnt=0;
                 
         for( int i=0;i<sz;i++){
@@ -3475,10 +3532,7 @@ public class Analysis implements PlugIn {
             n_BEs.add(bE);    
            
             cnt++;
-            }else{
-            
             }
-         
             
         }
          updateVisData(n_BEs);
@@ -3487,6 +3541,7 @@ public class Analysis implements PlugIn {
               case 11:
                 
                 t_c =("(spectral background photons");
+                str_units="";
                  cnt=0;
        
         for( int i=0;i<sz;i++){
@@ -3503,11 +3558,7 @@ public class Analysis implements PlugIn {
             n_BEs.add(bE);    
            
             cnt++;
-            }else{
-           
             }
-         
-            
         }
          updateVisData(n_BEs);
         
@@ -3516,6 +3567,7 @@ public class Analysis implements PlugIn {
               case 12:
                 
                 t_c =("spectral background photons/pixel");
+                str_units="";
              
                   cnt=0;
         
@@ -3533,10 +3585,7 @@ public class Analysis implements PlugIn {
             n_BEs.add(bE);    
            
             cnt++;
-            }else{
-            
             }
-     
         }
          updateVisData(n_BEs);
          
@@ -3544,7 +3593,8 @@ public class Analysis implements PlugIn {
               case 13:
                 
                 t_c =("spectral sigma");
-                 cnt=0;
+                str_units=" nm";
+                cnt=0;
      
         for( int i=0;i<sz;i++){
             Blinking bE=curBEs.get(i);
@@ -3560,16 +3610,14 @@ public class Analysis implements PlugIn {
             n_BEs.add(bE);    
            
             cnt++;
-            }else{
-           
-            }
-        
+            }        
         }
          updateVisData(n_BEs);
          
              break;
               case 14:
                 t_c =("spectral uncertainty");
+                str_units=" nm";
                 cnt=0;
              for( int i=0;i<sz;i++){
             Blinking bE=curBEs.get(i);
@@ -3585,10 +3633,7 @@ public class Analysis implements PlugIn {
             n_BEs.add(bE);    
            
             cnt++;
-            }else{
-          
-            }
-         
+            }         
             
         }
          updateVisData(n_BEs);
@@ -3597,12 +3642,13 @@ public class Analysis implements PlugIn {
             default:
               
                 t_c =("");
+                str_units="";
                IJ.log("Nothing Selected");
                 break;
         }
            
             
-      String st = t_c+"="+Double.toString(t1)+":"+Double.toString(t2);
+      String st = t_c+"="+Double.toString(t1)+str_units+":"+Double.toString(t2)+str_units;
            if(postProcessString.equals("")){
          postProcessString = postProcessString+st;
          }else{
@@ -3659,7 +3705,8 @@ public class Analysis implements PlugIn {
     }
  
     public void displayLoadedData(ArrayList<Blinking> n_BEs){
-     
+        
+        ArrayList<Integer> ids = new ArrayList<Integer>();
         ArrayList<Integer> frms= new ArrayList<Integer>();
         ArrayList<Double> xpos= new ArrayList<Double>();
         ArrayList<Double> ypos= new ArrayList<Double>();
@@ -3683,6 +3730,7 @@ public class Analysis implements PlugIn {
       
         for( int i=0;i<sz;i++){
             Blinking bE=n_BEs.get(i);
+            int id =i+1;
             float [] t_spec=bE.getSpectrum();
              Integer tmp_f=bE.getFrame();
             double tmp_x=bE.getXPosition();
@@ -3708,7 +3756,7 @@ public class Analysis implements PlugIn {
             double tmp_speunc=bE.getUncSPE();
           
             sp_sz=t_spec.length;
-           
+            ids.add(id);
             frms.add(tmp_f);
             xpos.add(tmp_x);
             ypos.add(tmp_y);
@@ -3732,9 +3780,7 @@ public class Analysis implements PlugIn {
         double[] xps= ArrayUtils.toPrimitive(xpos.toArray(new Double[cn_sz]));
         double[] yps= ArrayUtils.toPrimitive(ypos.toArray(new Double[cn_sz]));   
         double[] cens= ArrayUtils.toPrimitive(centroids.toArray(new Double[cn_sz]));
-       /* double[]phts= ArrayUtils.toPrimitive(photons.toArray(new Double[cn_sz]));
-        double[] bk_phts= ArrayUtils.toPrimitive(bk_pnum.toArray(new Double[cn_sz]));
-        double[] bk_pxs= ArrayUtils.toPrimitive(bk_px.toArray(new Double[cn_sz]));*/
+      
         double[] unc_spec =ArrayUtils.toPrimitive(unc_spe.toArray(new Double[cn_sz]));
      
       Max mx_Val = new Max();
@@ -3754,9 +3800,7 @@ public class Analysis implements PlugIn {
          
           int wid=(int) ((xmax-xmin)/conv);
           int hei=(int) ((ymax-ymin)/conv);
-         // IJ.log("width: "+wid);
-          //IJ.log("Height: "+hei);
-          //IJ.log("Roi?"+isROI);
+       
          
                  IJ.showStatus("Rendering Image...");
               
@@ -3764,8 +3808,10 @@ public class Analysis implements PlugIn {
                 
                   currentBEs=n_BEs;
                   oldBEs =n_BEs;
-                 // IJ.log("oldbes:"+oldBEs.size());
-                  //IJ.log("currbes:"+currentBEs.size());
+                  r_Wid=wid;
+                  r_Hei=hei;
+              
+                
                 
        IJ.showStatus("Launching Visualization Screen...");
      
@@ -3777,7 +3823,8 @@ public class Analysis implements PlugIn {
     
     
     public ArrayList<Blinking> loadBlinkingSpectraData(String filename) throws FileNotFoundException, IOException {
-         is3D =false;    
+         is3D =false; 
+        int id_col=-1;  
         int fr_col=-1;
         int x_col=-1;
         int y_col=-1;
@@ -3812,6 +3859,13 @@ public class Analysis implements PlugIn {
        
         for(int k=0;k<columnNames.length;k++){
             String cName= columnNames[k];
+            
+              
+            if(cName.contains("id")){
+                id_col=k;
+             
+            }
+            
             
             if(cName.contains("frame")){
                 fr_col=k;
@@ -3929,7 +3983,7 @@ public class Analysis implements PlugIn {
                 blinkings = new ArrayList<Blinking>();
           
                 csvFileLoaded = true;
-                
+                ArrayList<Integer> ids = new ArrayList<Integer>();
                 ArrayList<Double> frm= new ArrayList<Double>();
                 ArrayList<Double> xpos= new ArrayList<Double>();
                 ArrayList<Double> ypos= new ArrayList<Double>();
@@ -3948,6 +4002,7 @@ public class Analysis implements PlugIn {
                 ArrayList<Double> specunc= new ArrayList<Double>();
                 
                 ArrayList<Double[]> d_data= new ArrayList<Double[]>();
+                double id=0;
                 double xp=0;
                 double yp=0;
                 double zp=0;
@@ -3973,6 +4028,7 @@ public class Analysis implements PlugIn {
                       
                     String[] row=data.get(i1); 
                     
+                    id =Double.parseDouble(row[id_col]);
                     fr=Double.parseDouble(row[fr_col]);
                    
                     xp=Double.parseDouble(row[x_col]);
@@ -4012,7 +4068,8 @@ public class Analysis implements PlugIn {
                         }
                    
                     blinkings.add(new Blinking((int) fr, xp, yp,zp, ph_spt,sg1_spt,sg2_spt,lcunc,cen,ph,bkph,bkpx,spec_sig,spec_unc,tspec));
-                   
+                    // curIDs.add((int)id);
+                    //oldIDs.add((int)id);
                     frm.add(fr);
                     xpos.add(xp);
                     ypos.add(yp);
@@ -4030,6 +4087,7 @@ public class Analysis implements PlugIn {
                 for(int i2=1;i2<sz;i2++){
                     
                     String[] row=data.get(i2); 
+                    id =Double.parseDouble(row[id_col]);
                     fr=Double.parseDouble(row[fr_col]);
                     xp=Double.parseDouble(row[x_col]);
                     yp=Double.parseDouble(row[y_col]);
@@ -4055,6 +4113,8 @@ public class Analysis implements PlugIn {
                     
                     d_data.add(d_nextLine);
                     blinkings.add(new Blinking((int) fr, xp, yp,ph_spt,sg_spt,lcunc,cen,ph,bkph,bkpx,spec_sig,spec_unc,tspec));
+                    //curIDs.add((int)id);
+                    //oldIDs.add((int)id);
                     frm.add(fr);
                     xpos.add(xp);
                     ypos.add(yp);
@@ -5083,7 +5143,7 @@ public class Analysis implements PlugIn {
         double resolution= conv/mag;
      
         int v =this.getVisMethod();
-       
+       if(width>0&height>0){
         int stp=1;
         sSMLMLambdaColoredRendering stcr = new sSMLMLambdaColoredRendering(width, height, resolution);
         int[] nRng= stcr.setRng(mn_c,mx_c,stp);
@@ -5110,7 +5170,9 @@ public class Analysis implements PlugIn {
           break;
         }
      
-        
+       }else{
+           IJ.error("Unable to render sSMLM images");
+       }
     }
     
        
