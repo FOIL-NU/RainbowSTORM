@@ -536,8 +536,6 @@ public class Calibration implements PlugIn{
         if (i>0){
                difs[i]=Math.abs(maxima1[i]-maxima2[i]);
         }
-        String outv1= Integer.toString(maxima1[i]);
-             
               if(Math.abs(difs[i]-shf)>1)
               {
                   flg=1;

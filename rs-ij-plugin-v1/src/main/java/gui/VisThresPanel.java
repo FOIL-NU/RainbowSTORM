@@ -5,8 +5,6 @@
  */
 package gui;
 
-import ij.IJ;
-
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.beans.PropertyChangeEvent;
@@ -19,7 +17,7 @@ import java.awt.Dimension;
 
 /**
  *
- * @author Janel
+ * @author Janel L Davis
  */
 public class VisThresPanel extends JPanel {
     
@@ -131,8 +129,7 @@ public class VisThresPanel extends JPanel {
                        double numPts=stats[2];
                        double utilSpec=stats[3];
                        double utilPts=stats[4];
-                       IJ.log("UtilPts"+utilPts);
-                       
+                      
                        String st = "Average Spectral Photons: ";
                        String str = String.format("%.2f", avg_ph);
                        st= st+(str);
@@ -156,7 +153,7 @@ public class VisThresPanel extends JPanel {
                        
                        
                        String st4 = "Percent SMLM Localizations:";
-                       //if(!dataImported){
+                       
                        String str4 = String.format("%.2f", utilPts);
                        if(!dataImported){
                        st4= st4+(str4)+" %";

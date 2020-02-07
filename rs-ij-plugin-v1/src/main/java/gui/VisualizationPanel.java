@@ -40,19 +40,10 @@ import javax.swing.JTextField;
 import rstorm.Analysis;
 import ij.plugin.ContrastEnhancer;
 
-import java.awt.Desktop;
-import java.awt.Dialog;
-import java.awt.Window;
 import java.net.URL;
 
 import java.util.Collections;
 import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JEditorPane;
-import javax.swing.WindowConstants;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.stat.descriptive.rank.Max;
@@ -61,25 +52,23 @@ import org.apache.commons.math3.stat.descriptive.rank.Min;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 
-
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeriesCollection;
 import rendering.FRC_Analysis;
+import rstorm.RS_Help;
 
 import unmixing.Blinking;
 
 
 /**
  *
- * @author Janel
+ * @author Janel L Davis
  */
 public class VisualizationPanel extends JPanel {
     
     private Analysis controller;
     private static final String url = "sSMLM_Visualization.html";
-    private static final String ver = "2020_01";
-    private static final int WINDOW_WIDTH = 600;
-    private static final int WINDOW_HEIGHT = 600;
+   
     private JButton buttonHelp;
      private JPanel visThresP;
    
@@ -151,9 +140,6 @@ public class VisualizationPanel extends JPanel {
          int sp_sz=avg_sp.length;
          int sz= cens.length;
          
-         IJ.log("Wavelength "+sp_sz);
-         IJ.log("Num Cens "+sz);
-       
          float [][] out_spec=controller.arrayListTo2DFloatArray(spectra, sp_sz,sz);
          FloatProcessor sp_out=new FloatProcessor(out_spec);
              
@@ -172,10 +158,8 @@ public class VisualizationPanel extends JPanel {
               Image sp_output= sp_Img.getImage();
                sp_imc= new ImageIcon(sp_output);
         
-        
-                
                jspSpectra = new JScrollPane(new JLabel(sp_imc));
-               //jspSpectra.add(this)
+               
                 jspSpectra.setPreferredSize(new Dimension(sp_sz+50,300));
                 jspSpectra.createVerticalScrollBar();
                 
@@ -250,7 +234,7 @@ public class VisualizationPanel extends JPanel {
                 histPanel.setLayout(new FlowLayout());
                 JLabel lblHists = new JLabel("Histograms: ");
                 histPanel.add(lblHists);
-                //histPanel.add(new JLabel("Select Histogram:"));
+                
                 ArrayList<String> col_Names= new ArrayList<String>();
                 
                 if(is3DData){
@@ -277,7 +261,7 @@ public class VisualizationPanel extends JPanel {
                 driftPanel.setLayout(new FlowLayout());
                 driftPanel.add(new JLabel("Drift Correction File: "));
                 textfieldDriftFilePath = new JTextField(20);
-                //textfieldDriftFilePath .setText(def_file);
+               
                 driftPanel.add(textfieldDriftFilePath);
                 buttonLoadDrift = new JButton("<<Load");
                 buttonLoadDrift.setEnabled(true);
@@ -359,11 +343,7 @@ public class VisualizationPanel extends JPanel {
                 sc.gridx=0;
               
                 visThresP= new JPanel();
-                
-               /* int w1=750;
-                int h1= 100;
-                Dimension d2 =new Dimension(w1,h1);
-                visThresP.setPreferredSize(d2);*/
+               
                 JPanel tmp=new VisThresPanel(controller, dataImported);
                 visThresP.add(tmp);
                 visFields.add(visThresP,sc);
@@ -448,13 +428,14 @@ public class VisualizationPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                  
                     int[] cropPositions = new int[]{0,0,0,0};
-                    controller.cropROI(cropPositions);
-                
+                    boolean flg=controller.cropROI(cropPositions);
+                   if(flg){
                     ArrayList<Blinking> n_BEs=controller.getCurrentData();
                     int[] fy= controller.getRange();
                     controller.setROIflg(true);
                   
                     updatePlots(n_BEs,fy);
+                   }
                  
              
             }
@@ -507,8 +488,6 @@ public class VisualizationPanel extends JPanel {
             buttonClassify.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                     
-                     
                    
                      JFrame cbcFrame = new JFrame();
                      cbcFrame.setIconImage(IJ.getInstance().getIconImage());
@@ -519,9 +498,6 @@ public class VisualizationPanel extends JPanel {
                      cbcFrame.pack();
                      cbcFrame.setVisible(true);
                      
-                    
-                   
-             
             }
         }); 
                
@@ -543,17 +519,14 @@ public class VisualizationPanel extends JPanel {
                     }else{
                           controller.shwHists2D(idx);
                     }
-                    
-                   
-             
+                
             }
         });   
            
          buttonApplyFilter.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                        // Thread processThread =new Thread(){
-                  //  public void run(){
+                    
                     int idx= filterCombo.getSelectedIndex();
                      String th1_Val= ftfThres1.getText();
                     double th1=Double.parseDouble(th1_Val.replace(",",""));
@@ -592,51 +565,9 @@ public class VisualizationPanel extends JPanel {
             
             buttonHelp.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                 RS_Help rsHelp = new RS_Help();  
+              rsHelp.launchHelp(url);
                 
-                  try {
-           
-            JDialog dialog = new JDialog(IJ.getInstance(), "RainbowSTORM sSMLM Help(" + ver + ")");
-            if(IJ.isJava17()) {
-                dialog.setType(Window.Type.UTILITY);
-            }
-            dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            dialog.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE); 
-            final JEditorPane aboutPanel = new JEditorPane();
-            aboutPanel.setBorder(BorderFactory.createEmptyBorder());
-            aboutPanel.setEditable(false);
-            aboutPanel.addHyperlinkListener(new HyperlinkListener(){
-            @Override
-            public void hyperlinkUpdate(HyperlinkEvent event){
-            if(event.getEventType() ==HyperlinkEvent.EventType.ACTIVATED){
-                try{
-                    if(event.getURL().toString().contains("https://")){
-                     Desktop.getDesktop().browse(event.getURL().toURI());
-                    }else{
-
-                   aboutPanel.setPage(event.getURL());
-                    }
-
-                }catch(Exception ioe){
-                    System.err.println("Error loading url from link:"+ioe);
-
-                }
-            }
-            }
-            });            
-            URL resource = getClass().getClassLoader().getResource(url);
-           
-            JScrollPane scrollPane = new JScrollPane(aboutPanel);
-            scrollPane.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
-            dialog.getContentPane().add(scrollPane);
-            aboutPanel.setPage(resource);
-            
-          
-            dialog.pack();
-            dialog.setLocationRelativeTo(null);
-            dialog.setVisible(true);
-            } catch(Exception e2) {
-            IJ.handleException(e2);
-        }
             }
     
     });
@@ -675,10 +606,9 @@ public class VisualizationPanel extends JPanel {
          Blinking t_bE=BEs.get(0);
          float [] tmp_spec=t_bE.getSpectrum();
          sp_sz=tmp_spec.length;
-          IJ.log("Spectral Centroids: "+sp_sz);
+         
          int sz=BEs.size();
-         IJ.log("Current Centroids: "+sz);
-        
+                
         float [] sum_spec=new float[sp_sz];
         Arrays.fill(sum_spec,0);
         for( int i=0;i<sz;i++){
@@ -719,11 +649,11 @@ public class VisualizationPanel extends JPanel {
            int mxunc= (int) round(mx_Val.evaluate(uncs,0,sz));
           int mx1=(int) round(mx_Val.evaluate(cens,0,sz));
           int tmp_val=mxunc;
-         // if(mxunc<=0||tmp_val>1000){
+        
           if(mxunc<=0){
               tmp_val=1;
           }
-          IJ.log("Tmp Val:"+tmp_val);
+         
           int xmax=(int) round(mx_Val.evaluate(xpos,0,sz))+tmp_val;
               
           int ymax=(int) round(mx_Val.evaluate(ypos,0,sz))+tmp_val;
@@ -739,7 +669,7 @@ public class VisualizationPanel extends JPanel {
               xmin=0;
           }
           double pixelSize = controller.getPixelSize()+0.5;
-          //double conv=pixelSize+0.5;
+       
           double conv=pixelSize+0.5;
           int wid=(int) ((xmax-xmin)/conv);
           int hei=(int) ((ymax-ymin)/conv);
@@ -747,7 +677,6 @@ public class VisualizationPanel extends JPanel {
           
          float[] avg_sp= controller.getAvgSpectra(sum_spec,sz);
     
-         IJ.log("Data Updated");
         Color[] col=new Color[1];
         col[0]=Color.black;
          XYSeriesCollection dataset =new XYSeriesCollection();
@@ -800,15 +729,12 @@ public class VisualizationPanel extends JPanel {
              repaint();
               
                this.cBEs =BEs;
-               //imVals=null;
-               
+              
                int[] tVals={mn1,mx1,wid,hei,xmin,ymin,mxunc};
                   imVals=tVals;
-                  IJ.log("Crop vals: "+mn1+" "+mx1+" "+wid+" "+hei+" "+xmin+" "+ymin+" "+mxunc);
-                   IJ.log("Crop vals: "+imVals[0]+" "+imVals[1]+" "+imVals[2]+" "+imVals[3]+" "+imVals[4]+" "+imVals[5]+ " "+imVals[6]);
-           
+                  
                 updateImgs();
-                IJ.log("Charts Updated");  
+               
       
         }
       
@@ -818,8 +744,8 @@ public class VisualizationPanel extends JPanel {
       Thread processThread =new Thread(){
                     @Override
                     public void run(){
-                          IJ.log("Crop vals: "+imVals[0]+" "+imVals[1]+" "+imVals[2]+" "+imVals[3]+" "+imVals[4]+" "+imVals[5]+ " "+imVals[6]);
-      controller.drawTCGaussianROI(cBEs,imVals[0],imVals[1],imVals[2],imVals[3],imVals[4],imVals[5],imVals[6]);
+                    
+                 controller.drawTCGaussianROI(cBEs,imVals[0],imVals[1],imVals[2],imVals[3],imVals[4],imVals[5],imVals[6]);
               
        }
                 };

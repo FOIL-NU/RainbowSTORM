@@ -13,11 +13,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
 
-
-
 /**
  *
- * @author Janel
+ * @author Janel L Davis
  */
 public class ExportCSV {
     
@@ -42,13 +40,11 @@ public class ExportCSV {
         fc2.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         int userSelection = fc2.showSaveDialog(parentFrame);
         if (userSelection== JFileChooser.APPROVE_OPTION) {
-            IJ.log("getCurrentDirectory(): "  +  fc2.getCurrentDirectory());
-            
+           
                 saveDirectory = fc2.getSelectedFile().toString();
                 lastFilename=saveDirectory;
                 String saveFilename = saveDirectory +".csv";
-                 
-                IJ.log("Saving to: " + saveFilename);
+              
                 File file = new File(saveFilename);
         
         
@@ -81,25 +77,18 @@ public class ExportCSV {
     } 
         
             } else {
-            IJ.log("A folder was not selected.");
+            IJ.error("A folder was not selected.");
         }
-        
-           
-       /* if(userSelection == JFileChooser.CANCEL_OPTION||userSelection ==JFileChooser.ABORT){
-            parentFrame.dispose();
-            
-        }*/
+
         
     }
     
     
     public void exportSpectraCSV(String dir,String[] header,ArrayList<String[]> data ) throws IOException{
-       
-       
+             
        
                 String saveFilename = dir+"_spec.csv";
-                 
-                IJ.log("Saving to: " + saveFilename);
+               
                 File file = new File(saveFilename);
         
         

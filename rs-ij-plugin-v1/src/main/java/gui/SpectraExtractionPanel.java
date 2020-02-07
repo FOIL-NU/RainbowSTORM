@@ -22,37 +22,29 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import rstorm.Analysis;
-import java.awt.Desktop;
-import java.awt.Dialog;
+
 import java.awt.Dimension;
 import java.awt.Image;
-import java.awt.Window;
 
 import java.net.URL;
 import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
-import javax.swing.JDialog;
-import javax.swing.JEditorPane;
-import javax.swing.JScrollPane;
-import javax.swing.WindowConstants;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
+
+import rstorm.RS_Help;
 
 
 
 /**
  *
- * @author Janel
+ * @author Janel L Davis
  */
 public class SpectraExtractionPanel extends JPanel {
     
     Analysis controller;
     private static final String url = "sSMLM_Analysis.html";
-    private static final String ver = "2020_01";
-    private static final int WINDOW_WIDTH = 600;
-    private static final int WINDOW_HEIGHT = 600;
+   
     private JButton buttonFindSpectra;
     private JButton buttonPreview;
     private JButton buttonHelp;
@@ -154,10 +146,7 @@ public class SpectraExtractionPanel extends JPanel {
         spWindowPanel.add(checkboxRmvOLSpec);
     
         add(spWindowPanel,bc); 
-         
-       // JPanel pxCompPanel = new JPanel();
-        //pxCompPanel.setLayout(new FlowLayout());
-        
+      
         JPanel spSize = new JPanel();
         spSize.setLayout(new FlowLayout());
         
@@ -166,15 +155,10 @@ public class SpectraExtractionPanel extends JPanel {
         checkboxAdParams.setEnabled(true);
         checkboxAdParams.setSelected(bAdSt);
         spSize.add(checkboxAdParams);
-        //bc.gridy++;
-        //bc.anchor=GridBagConstraints.LINE_START;
-        //add(pxCompPanel,bc);
-        
-        
         
          spSize.add(new  JLabel ("Fit Spectrum Width [nm]: "));
         checkboxFitSpecWidth=new JCheckBox();
-        //checkboxFitSpecWidth.setEnabled(true);
+        
         checkboxFitSpecWidth.setEnabled(false);
         checkboxFitSpecWidth.setSelected(bFtSw);
        
@@ -196,7 +180,7 @@ public class SpectraExtractionPanel extends JPanel {
         pxCompPanel.setLayout(new FlowLayout());
         
         pxCompPanel.add(new JLabel("Localization Pixel Shift: +/-"));
-        // spSize.add(new JLabel("Localization Pixel Shift: +/-"));
+        
         
         ftfBlinkingWidth = new JFormattedTextField();
         ftfBlinkingWidth.setValue(new Integer(iLPS));
@@ -204,10 +188,8 @@ public class SpectraExtractionPanel extends JPanel {
         ftfBlinkingWidth.setEditable(false);
         ftfBlinkingWidth.setEnabled(false);
         pxCompPanel.add(ftfBlinkingWidth);
-        //spSize.add(ftfBlinkingWidth);
-        
+      
         pxCompPanel.add(new JLabel("Y-Compensation:"));
-        // spSize.add(new JLabel("Y-Compensation:"));
        
         ftfYShift = new JFormattedTextField();
         ftfYShift.setValue(new Integer(iYCmp));
@@ -215,32 +197,18 @@ public class SpectraExtractionPanel extends JPanel {
         ftfYShift.setEditable(false);
         ftfYShift.setEnabled(false);
         pxCompPanel.add(ftfYShift);
-        // spSize.add(ftfYShift);
-        
+      
         bc.gridy++;
         add(pxCompPanel,bc);
-       // add(spSize,bc);
-                     
+       
         JPanel exPanel = new JPanel();
         exPanel.setLayout(new FlowLayout());
     
-        
-        /*exPanel.add(new JLabel("Remove Overlapping Spectra:"));
-        checkboxRmvOLSpec = new JCheckBox();
-        checkboxRmvOLSpec.setEnabled(true);
-        exPanel.add(checkboxRmvOLSpec);*/
-       
         buttonDefaults = new JButton("Reset");
         buttonDefaults.setPreferredSize(d);
         buttonDefaults.setEnabled(true);
         exPanel.add(buttonDefaults);
-        
-         /*exPanel.add(new JLabel("Remove Overlapping Spectra:"));
-        checkboxRmvOLSpec = new JCheckBox();
-        checkboxRmvOLSpec.setEnabled(true);
-        checkboxRmvOLSpec.setSelected(bRmOvSp);
-        exPanel.add(checkboxRmvOLSpec);*/
-        
+      
         
         exPanel.add(buttonPreview);
         exPanel.add(buttonFindSpectra);
@@ -248,8 +216,7 @@ public class SpectraExtractionPanel extends JPanel {
         bc.gridy++;
         bc.anchor= GridBagConstraints.CENTER;
         add(exPanel,bc);
-        //bc.gridy++;
-                
+        
          JPanel helpPanel = new JPanel();
         helpPanel.setLayout(new FlowLayout());
         URL loc;
@@ -259,15 +226,14 @@ public class SpectraExtractionPanel extends JPanel {
        ImageIcon img_icon =new ImageIcon(loc);
        Image img = img_icon.getImage();
        
-       Image newimg = img.getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH); // scale it the smooth way 
+       Image newimg = img.getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH);
        img_icon = new ImageIcon(newimg); 
-       
        
         buttonHelp =new JButton(img_icon);
         buttonHelp.setEnabled(true);
         buttonHelp.setPreferredSize(new Dimension (20,20));
         helpPanel.add(buttonHelp);
-        //bc.gridy=bc.gridy++;
+     
         bc.anchor=GridBagConstraints.LAST_LINE_END;
         
        add(helpPanel, bc);
@@ -303,9 +269,7 @@ public class SpectraExtractionPanel extends JPanel {
         });
         buttonFindSpectra.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                
-                
-               // IJ.showStatus("Extracting Spectra...");
+             
                   Thread processThread =new Thread(){
                     public void run(){
                 
@@ -331,7 +295,7 @@ public class SpectraExtractionPanel extends JPanel {
                  gui.SpatialImageParameterPanel.ftfBsLv.commitEdit();
                  
                  int px_Size=((Number)gui.SpatialImageParameterPanel.ftfPixSize.getValue()).intValue();
-                 //controller.setPixelSize();
+               
                  controller.setPxSize((double)px_Size);
                  int EMG=((Number)gui.SpatialImageParameterPanel.ftfEmGain.getValue()).intValue();
                  double adu= ((Number)gui.SpatialImageParameterPanel.ftfADU.getValue()).doubleValue();
@@ -353,19 +317,16 @@ public class SpectraExtractionPanel extends JPanel {
                  }
                  
                  boolean flg1 = validRange(rng1,rng2,stp);
-                 boolean flg2 = validParams(bw,px_Size,EMG,adu,bsLv,specWidth);
-                 IJ.log("Flg1 "+flg1);
-                 IJ.log("Flg2 "+flg2);
-                 
-                 
+                 boolean flg2 = validParams(bw,px_Size,EMG,adu,bsLv,specWidth,ycomp);
+                
                  if(flg1&&flg2){
                      int rmvOL=1;
                      if(checkboxRmvOLSpec.isSelected()==false){
                       rmvOL=0;  
                      }
-                //  IJ.showProgress(0.25);    
+             
                  controller.extractSpectra(bw, rng1,  rng2,  stp, px_Size,EMG,adu,bsLv,fitFlg,specWidth,ycomp,rmvOL);
-                // IJ.showProgress(1);
+              
                   IJ.showStatus("sSMLM data Processed!");
                  
                  }
@@ -426,10 +387,8 @@ public class SpectraExtractionPanel extends JPanel {
                  }
                  
                  boolean flg1 = validRange(rng1,rng2,stp);
-                 boolean flg2 = validParams(bw,px_Size,EMG,adu,bsLv,specWidth);
-                 IJ.log("Flg1 "+flg1);
-                 IJ.log("Flg2 "+flg2);
-                 
+                 boolean flg2 = validParams(bw,px_Size,EMG,adu,bsLv,specWidth,ycomp);
+                
                  if(flg1&&flg2){
                   int rmvOL=1;
                      if(checkboxRmvOLSpec.isSelected()==false){
@@ -466,8 +425,7 @@ public class SpectraExtractionPanel extends JPanel {
                     
                 }else
                 {
-                    
-                    //csvLoaded=true;
+                  
                     csvLoaded =controller.getCSVFileLoaded();
                 }
                 }
@@ -550,55 +508,9 @@ public class SpectraExtractionPanel extends JPanel {
        
          buttonHelp.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                RS_Help rsHelp = new RS_Help();  
+                rsHelp.launchHelp(url);
                 
-                  try {
-           
-            JDialog dialog = new JDialog(IJ.getInstance(), "RainbowSTORM sSMLM Help(" + ver + ")");
-            if(IJ.isJava17()) {
-                dialog.setType(Window.Type.UTILITY);
-            }
-           //dialog.setdef 
-           dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            dialog.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE); //for use within modal dialog
-            final JEditorPane aboutPanel = new JEditorPane();
-            aboutPanel.setBorder(BorderFactory.createEmptyBorder());
-             aboutPanel.setEditable(false);
-            aboutPanel.addHyperlinkListener(new HyperlinkListener(){
-                  @Override
-                    public void hyperlinkUpdate(HyperlinkEvent event){
-                    if(event.getEventType() ==HyperlinkEvent.EventType.ACTIVATED){
-                        try{
-                            
-                            if(event.getURL().toString().contains("https://")){
-                             Desktop.getDesktop().browse(event.getURL().toURI());
-                            }else{
-                                
-                           aboutPanel.setPage(event.getURL());
-                            }
-                          
-                            
-                            
-                        }catch(Exception ioe){
-                            System.err.println("Error loading url from link:"+ioe);
-                          
-                        }
-                    }
-                    }
-            });            
-            URL resource = getClass().getClassLoader().getResource(url);
-           
-            JScrollPane scrollPane = new JScrollPane(aboutPanel);
-            scrollPane.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
-            dialog.getContentPane().add(scrollPane);
-            aboutPanel.setPage(resource);
-            
-          
-            dialog.pack();
-            dialog.setLocationRelativeTo(null);
-            dialog.setVisible(true);
-            } catch(Exception e2) {
-            IJ.handleException(e2);
-        }
             }
     
     });
@@ -610,7 +522,7 @@ public class SpectraExtractionPanel extends JPanel {
         boolean flg= false;
         boolean flg1=rng1<380||rng2>870||rng1<0||rng2<0||rng1>=rng2;
         if(flg1){
-            IJ.error("Invalid spectrum Range selected. Please select values from 380 nm : 900 nm)");
+            IJ.error("Invalid spectrum Range selected. Please select values from 380 nm : 870 nm)");
 
             }
     boolean flg2 = stp>(rng2-rng1)||stp<1;
@@ -626,12 +538,18 @@ public class SpectraExtractionPanel extends JPanel {
     return flg;
     }
     
-   public static boolean validParams(int bw, int px_Size,int EMG,double adu,int bsLv,double specWidth){
+   public static boolean validParams(int bw, int px_Size,int EMG,double adu,int bsLv,double specWidth,int yComp){
        boolean flg= false; 
        int inv=0;
     
     if(bw<=0){
-        IJ.error("Blinking width must be positive and non-zero");
+        IJ.error("Localization Pixel Shift must be positive and non-zero");
+        inv++;
+        
+    }
+    
+     if(bw<1||bw>3){
+        IJ.error("Localization Pixel Shift must range from 1 to 3");
         inv++;
         
     }
@@ -665,13 +583,17 @@ public class SpectraExtractionPanel extends JPanel {
         inv++;
     }
     
-     IJ.log("Counter "+inv);
+    
+    if(yComp<-5||yComp>5){
+        IJ.error("Y-Compensation must range from -5 to 5");
+        inv++;
+        
+    }
+    
      if(inv==0){
          flg=true;
      }
 
-       
-   
        return flg;    
    }
            

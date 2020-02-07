@@ -22,7 +22,7 @@ import static java.lang.Math.ceil;
 import java.util.ArrayList;
 import javax.swing.SwingUtilities;
 import unmixing.Blinking;
-
+import rendering.GaussianRendering;
 /**
  *
  * @author Janel
@@ -39,22 +39,19 @@ public class sSMLM_3D {
     ImageProcessor img_tmp;
     ImageStack n_stack;
     ImageStack imgs;
-    
-    
-    
+    GaussianRendering grn;
+      
       public sSMLM_3D(int width, int height, double resolution) {
         this.resolution = resolution;
      
-        
-        this.width = (int) ((width ));//+(2*resolution));
-        this.height = (int) ((height));//+(2*resolution));
-        
-        System.out.println("Blinking Image Width: " + this.width);
-        System.out.println("Blinking Image Height: " + this.height);
+        this.width = (int) ((width ));
+        this.height = (int) ((height));
+      
    
         this.imgProc = new FloatProcessor(this.width, this.height);
-         this.cp = new ColorProcessor(this.width, this.height);
+        this.cp = new ColorProcessor(this.width, this.height);
         this.n_stack = new ImageStack(this.width, this.height);
+        grn = new GaussianRendering(width,height,resolution);
         
     }
       
@@ -104,9 +101,6 @@ public class sSMLM_3D {
             
       
     }
-     
-
-    
      
      
       public ImageProcessor renderTCGaussianROI(ArrayList<Blinking> BEs,int[] nRng, ArrayList<Color> cols,int xmin, int ymin, int mxunc) {
@@ -178,8 +172,6 @@ public class sSMLM_3D {
        imgs2.setMethod(ZProjector.SUM_METHOD);
        imgs2.doRGBProjection();
       
-       //ColorProcessor out =imgs2.getProjection();
-       
       ImagePlus out= imgs2.getProjection();
       ImageProcessor c_img = out.getProcessor();
      
@@ -237,14 +229,14 @@ public class sSMLM_3D {
                     for(int idx = u - actualRadius; idx <= u + actualRadius; idx++) {
                        
                             double difx = idx - x_org;
-                            double xerfdif = (erf((difx) / sqrt2dx) - erf((difx + 1) / sqrt2dx));
+                            double xerfdif = (grn.erf((difx) / sqrt2dx) - grn.erf((difx + 1) / sqrt2dx));
                                
                             for(int idy = v - actualRadius; idy <= v + actualRadius; idy++) {
                                
                                     double dify = idy - y_org;
                                    
                                     double val = (1*xerfdif
-                                            * (erf((dify) / sqrt2dx) - erf((dify + 1) / sqrt2dx)));
+                                            * (grn.erf((dify) / sqrt2dx) - grn.erf((dify + 1) / sqrt2dx)));
                            
                                     
                                  tmp.setf(idx, idy,(float)val+tmp.getf(idx,idy));
@@ -257,31 +249,7 @@ public class sSMLM_3D {
         return tmp;
     } 
         
-    
-        // fractional error in math formula less than 1.2 * 10 ^ -7.
-    // although subject to catastrophic cancellation when z in very close to 0
-    // from Chebyshev fitting formula for erf(z) from Numerical Recipes, 6.2
-    public double erf(double z) {
-        double t = 1.0 / (1.0 + 0.5 * Math.abs(z));
-
-        // use Horner's method
-        double ans = 1 - t * Math.exp(-z * z - 1.26551223
-                + t * (1.00002368
-                + t * (0.37409196
-                + t * (0.09678418
-                + t * (-0.18628806
-                + t * (0.27886807
-                + t * (-1.13520398
-                + t * (1.48851587
-                + t * (-0.82215223
-                + t * (0.17087277))))))))));
-        if(z >= 0) {
-            return ans;
-        } else {
-            return -ans;
-        }
-    }
-      
+       
       public void drawPoint(double x, double y, Color color) {
     
         int u = (int) (x / this.resolution);
@@ -297,7 +265,7 @@ public class sSMLM_3D {
         cp.setColor(color);
         cp.drawDot(u,v);
         }
-        //imgProc.setf(u,v, color);
+       
     }
       
   
@@ -317,13 +285,9 @@ public class sSMLM_3D {
         return new_rng;
     }   
       
-      
-      
-      
       public Color getColor(double val,int[] new_rng, ArrayList<Color> cols){
         
          int nbins =cols.size();
-         
          
          int stp=-1;
         for(int i=0;i<nbins;i++){
@@ -332,7 +296,6 @@ public class sSMLM_3D {
             stp=i;
             break;
             
-         
             }
         }
           if(stp==-1)
@@ -345,13 +308,8 @@ public class sSMLM_3D {
       }
       
         public int getRGBColor(double val,int[] new_rng, ArrayList<Color> cols){
-          
         
          int nbins =cols.size();
-         Color mn_col=cols.get(0);
-         Color mx_col=cols.get(nbins-1);
-          int i_mncol=mn_col.getRGB();
-         
         
          int stp=-1;
         for(int i=0;i<nbins;i++){
@@ -360,45 +318,17 @@ public class sSMLM_3D {
             stp=i;
             break;
             
-         
             }
         }
           if(stp==-1)
           {
               stp=nbins-1;
           }
-           
-          
+         
          return stp;
       }
       
-      
-      
-        public float getFColor(double val,int[] new_rng, ArrayList<Float> cols){
-          
-        float c = -1;
-         int nbins =cols.size();
-         //IJ.log("Bins:"+nbins);
-         int stp=-1;
-        for(int i=0;i<nbins;i++){
-            int cbin=new_rng[i];
-            if (val<cbin){
-            stp=i;
-            break;
-            
-         
-            }
-        }
-          if(stp!=-1)
-          {
-              c = cols.get(stp);
-          }
-     
-         return c;
-      }
-      
-      
-      
+           
         public int[] getnewRng( int mn1, int mx1,int stp, int nbins) {
          
         int[] n_rng=new int[nbins];
@@ -419,7 +349,7 @@ public class sSMLM_3D {
         SpectrumPaintScale spc = new SpectrumPaintScale(mn1,mx1);
        
         int nbins=n_rng.length;
-        //int cVal=mn1;
+       
         for(int i=0;i<nbins;i++){
              
             Color c=spc.getPaint(n_rng[i]);
@@ -432,107 +362,8 @@ public class sSMLM_3D {
         return cRng;
     }  
        
-       
-     public ArrayList<Float> getFColRng( int mn1, int mx1,int[] n_rng) {
-        ArrayList<Float> cRng =new ArrayList<Float>();  
-        SpectrumPaintScale spc = new SpectrumPaintScale(mn1,mx1);
-       
-        int nbins=n_rng.length;
-        //int cVal=mn1;
-        for(int i=0;i<nbins;i++){
-             
-            float c=spc.getFPaint(n_rng[i]);
-            
-             cRng.add(c);
-            
-            }
-        
-        
-        return cRng;
-    }  
-     
-        public ArrayList<Color> convertFtoCol(ArrayList<Float> fvals) {
-        ArrayList<Color> cRng =new ArrayList<Color>();  
-        SpectrumPaintScale spc = new SpectrumPaintScale(0,1);
-       
-        int nbins=fvals.size();
-        
-        for(int i=0;i<nbins;i++){
-            float curval =fvals.get(i);
-            Color c=spc.getColor(curval);
-            
-             cRng.add(c);
-            
-            }
-        
-        
-        return cRng;
-    }  
-        
-        
    
-       
-   public void drawLegend(int[] new_rng, ArrayList<Color> cols){
-                 int sz =new_rng.length;
-                int min= new_rng[0];
-                int max =new_rng[sz-1];
-                int ipwid=60;
-                int iph=200;
-		ColorProcessor iplegend = new ColorProcessor(ipwid , iph );
-		
-                for(int u = 0; u<ipwid; u++){
-			for (int v = 0; v < iph ; v++){
-                            
-                               float val =(float)( max - (max-min) * (double) v / iph) ;
-                                
-                                
-                                Color col=getColor(val,new_rng,cols);
-                                float vu=(float)col.getRGB();
-                                iplegend.setColor(col);
-                                 
-                                if(u<=ipwid/3)
-				iplegend.setf(u,v,vu);
-                                else{
-                                Color col2=Color.white;
-                                float vu2=(float)col2.getRGB();
-                                iplegend.setf(u,v, vu2);
-                                }
-                             
-			}
-		}
-             
-		ImagePlus plegend = new ImagePlus("Legend", iplegend); 
-		plegend.show();
-                ImageCanvas ic = new ImageCanvas(plegend);
-              
-                ic.setSize(ipwid, iph+20);
-               // plegend.set
-		//IJ.run("Canvas Size...", "width="+ 80 +" height="+ 220 +" position=Center-Left");
-		
-                     
-		Font font = new Font("SansSerif", Font.PLAIN, 8);
-		String stup = "" + max + " nm";
-		String stmin = "" + min + " nm";
-		String stmid = "" + (max + min)/2 + " nm";
-		TextRoi roiup = new TextRoi(ipwid/2, 2, stup, font); 
-		TextRoi roimid = new TextRoi(ipwid/2,(iph/2)+5, stmid, font);
-		TextRoi roilow = new TextRoi(ipwid/2, iph, stmin, font);
-               
-		//roi.drawPixels(fond);
-		roiup.setStrokeColor(Color.black);
-		roimid.setStrokeColor(Color.black);
-		roilow.setStrokeColor(Color.black);
-		Overlay ov = new Overlay(); 
-		ov.add(roiup);
-		ov.add(roimid);
-		ov.add(roilow);
-                plegend.setOverlay(ov);
-	}	    
+    
   
-   
-   
-   
-       
-      
     
 }

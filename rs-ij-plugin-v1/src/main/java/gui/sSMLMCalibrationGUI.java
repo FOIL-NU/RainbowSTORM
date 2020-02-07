@@ -27,27 +27,16 @@ import javax.swing.JPanel;
 import javax.swing.JFormattedTextField;
 
 import rstorm.Calibration;
-import java.awt.Desktop;
-import java.awt.Dialog;
 import java.awt.Image;
-import java.awt.Window;
 import java.net.URL;
-import java.text.ParseException;
-
-
 import java.util.ArrayList;
 import javax.swing.ImageIcon;
 
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JEditorPane;
-import javax.swing.JScrollPane;
-import javax.swing.WindowConstants;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
+import rstorm.RS_Help;
 /**
  *
- * @author Janel
+ * @author Janel L Davis
  */
 public class sSMLMCalibrationGUI extends JPanel{
     
@@ -55,16 +44,12 @@ public class sSMLMCalibrationGUI extends JPanel{
     private Calibration controller;
     
     private static final String url = "sSMLM_Calibration.html";
-    private static final String ver = "2020_01";
-    private static final int WINDOW_WIDTH = 600;
-    private static final int WINDOW_HEIGHT = 600;
     private JButton buttonCalibrate;
     private JButton buttonSet;
     private JButton buttonSave;
     private JButton buttonNext;
     private JButton buttonBack;
-    private JLabel caliLabel;
-    
+     
     private JFormattedTextField ftfSP;
     private JFormattedTextField ftfWv1;
     private JFormattedTextField ftfWv2;
@@ -274,7 +259,7 @@ public class sSMLMCalibrationGUI extends JPanel{
        ImageIcon img_icon =new ImageIcon(loc);
        Image img = img_icon.getImage();
        
-       Image newimg = img.getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH); // scale it the smooth way 
+       Image newimg = img.getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH); 
        img_icon = new ImageIcon(newimg); 
        
         buttonHelp =new JButton(img_icon);
@@ -421,53 +406,9 @@ public class sSMLMCalibrationGUI extends JPanel{
         
          buttonHelp.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+               RS_Help rsHelp = new RS_Help();  
+              rsHelp.launchHelp(url);
                 
-                  try {
-           
-            JDialog dialog = new JDialog(IJ.getInstance(), "RainbowSTORM sSMLM Help(" + ver + ")");
-            if(IJ.isJava17()) {
-                dialog.setType(Window.Type.UTILITY);
-            }
-           //dialog.setdef 
-           dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            dialog.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE); //for use within modal dialog
-            final JEditorPane aboutPanel = new JEditorPane();
-            aboutPanel.setBorder(BorderFactory.createEmptyBorder());
-            aboutPanel.setEditable(false);
-            aboutPanel.addHyperlinkListener(new HyperlinkListener(){
-                    @Override
-                    public void hyperlinkUpdate(HyperlinkEvent event){
-                    if(event.getEventType() ==HyperlinkEvent.EventType.ACTIVATED){
-                        try{
-                            
-                            if(event.getURL().toString().contains("https://")){
-                             Desktop.getDesktop().browse(event.getURL().toURI());
-                            }else{
-                                
-                           aboutPanel.setPage(event.getURL());
-                            }
-                        
-                        }catch(Exception ioe){
-                            System.err.println("Error loading url from link:"+ioe);
-                          
-                        }
-                    }
-                    }
-            });                 
-            URL resource = getClass().getClassLoader().getResource(url);
-           
-            JScrollPane scrollPane = new JScrollPane(aboutPanel);
-            scrollPane.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
-            dialog.getContentPane().add(scrollPane);
-            aboutPanel.setPage(resource);
-            
-          
-            dialog.pack();
-            dialog.setLocationRelativeTo(null);
-            dialog.setVisible(true);
-            } catch(Exception e2) {
-            IJ.handleException(e2);
-        }
             }
     
     });
@@ -493,9 +434,7 @@ public class sSMLMCalibrationGUI extends JPanel{
                      if (ftfPk5.isEditable()==true)
                 {flg=6;}
                    
-                String outx= Integer.toString(flg);
-                
-                
+              
                 switch(flg){
                     case 1:
                         ftfPk0.setValue(new Integer(pk));
@@ -557,9 +496,7 @@ public class sSMLMCalibrationGUI extends JPanel{
                 {flg=5;}
                     if (ftfPk5.isEditable()==true)
                 {flg=6;}
-                 
-                String outx= Integer.toString(flg);
-                
+               
                 switch(flg){
                     case 1:
                        
@@ -592,8 +529,7 @@ public class sSMLMCalibrationGUI extends JPanel{
                         break;
                      default:
                          ftfPk5.setEditable(true);
-                         String outx2= Integer.toString(flg);
-                    
+                       
                 }
                              
             }

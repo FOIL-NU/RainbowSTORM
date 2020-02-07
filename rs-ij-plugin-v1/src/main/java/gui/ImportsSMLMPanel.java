@@ -17,31 +17,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import rstorm.Analysis;
 import ij.IJ;
-import ij.plugin.BrowserLauncher;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Dialog;
+
 import java.awt.Dimension;
 import java.awt.Image;
-import java.awt.Window;
-import java.net.MalformedURLException;
+
 import java.net.URL;
 import javax.swing.ImageIcon;
-import javax.swing.JDialog;
-import javax.swing.JEditorPane;
 import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.WindowConstants;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
+
+import rstorm.RS_Help;
 import unmixing.Blinking;
+
 
 /**
  *
@@ -49,10 +40,8 @@ import unmixing.Blinking;
  */
 public class ImportsSMLMPanel extends JPanel {
     private Analysis controller;
-     private static final String url = "sSMLM_Import.html";
-    private static final String ver = "2020_01";
-    private static final int WINDOW_WIDTH = 600;
-    private static final int WINDOW_HEIGHT = 600;
+    private static final String url = "sSMLM_Import.html";
+ 
     private JFrame imsFrame;
     private JButton buttonHelp;
     private JButton buttonLoadSpectra;
@@ -134,7 +123,7 @@ public class ImportsSMLMPanel extends JPanel {
         buttonHelp.setEnabled(true);
         buttonHelp.setPreferredSize(new Dimension (20,20));
         helpPanel.add(buttonHelp);
-        //bc.gridy=bc.gridy++;
+     
         bc.anchor=GridBagConstraints.LAST_LINE_END;
         
        add(helpPanel, bc);
@@ -150,10 +139,10 @@ public class ImportsSMLMPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 try {
                     spData=new ArrayList<Blinking>();
-                    IJ.log(textfieldLoadSpectraDataFilename.getText());
+                   // IJ.log(textfieldLoadSpectraDataFilename.getText());
                     spData =controller.loadBlinkingSpectraData(textfieldLoadSpectraDataFilename.getText());
                    if(spData!=null){
-                    IJ.log("Size: "+spData.size());
+                   // IJ.log("Size: "+spData.size());
                 }
                     
                 } catch (IOException ex) {
@@ -169,6 +158,7 @@ public class ImportsSMLMPanel extends JPanel {
                 
                 sip.setParams();
                 controller.setDefaults();
+                
                 controller.displayLoadedData(spData);
                 imsFrame.setVisible(false);
               
@@ -177,60 +167,9 @@ public class ImportsSMLMPanel extends JPanel {
         
         buttonHelp.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+              RS_Help rsHelp = new RS_Help();  
+              rsHelp.launchHelp(url);
                 
-                  try {
-           
-            JDialog dialog = new JDialog(IJ.getInstance(), "RainbowSTORM Help(" + ver + ")");
-            if(IJ.isJava17()) {
-                dialog.setType(Window.Type.UTILITY);
-            }
-           //dialog.setdef 
-           dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            dialog.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE); //for use within modal dialog
-            
-            final JEditorPane aboutPanel = new JEditorPane();
-           
-            
-            aboutPanel.setBorder(BorderFactory.createEmptyBorder());
-            
-            aboutPanel.setEditable(false);
-            aboutPanel.addHyperlinkListener(new HyperlinkListener(){
-                    @Override
-                    public void hyperlinkUpdate(HyperlinkEvent event){
-                    if(event.getEventType() ==HyperlinkEvent.EventType.ACTIVATED){
-                        try{
-                            
-                            if(event.getURL().toString().contains("https://")){
-                             Desktop.getDesktop().browse(event.getURL().toURI());
-                            }else{
-                                
-                           aboutPanel.setPage(event.getURL());
-                            }
-                          
-                            
-                            
-                        }catch(Exception ioe){
-                            System.err.println("Error loading url from link:"+ioe);
-                          
-                        }
-                    }
-                    }
-            });           
-         
-            URL resource = getClass().getClassLoader().getResource(url);
-           
-            JScrollPane scrollPane = new JScrollPane(aboutPanel);
-            scrollPane.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
-            dialog.getContentPane().add(scrollPane);
-            aboutPanel.setPage(resource);
-            
-          
-            dialog.pack();
-            dialog.setLocationRelativeTo(null);
-            dialog.setVisible(true);
-            } catch(Exception e2) {
-            IJ.handleException(e2);
-        }
             }
     
     });

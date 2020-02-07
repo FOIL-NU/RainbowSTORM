@@ -14,7 +14,7 @@ import unmixing.Blinking;
 
 /**
  *
- * @author Janel
+ * @author Janel Davis
  */
 public class ScatterRenderingColor {
     
@@ -29,13 +29,9 @@ public class ScatterRenderingColor {
         this.resolution = resolution;
         this.width = (int) ((width )+(2*resolution));
         this.height = (int) ((height)+(2*resolution));
-        
-         System.out.println("Blinking Image Width: " + this.width);
-        System.out.println("Blinking Image Height: " + this.height);
-        //this.imgProc = new 
+       
         this.imgProc = new ColorProcessor(this.width, this.height);
         
-        //this.imgProc.setValue(16777215);
     }
     
     public void drawPoint(double x, double y,int color) {

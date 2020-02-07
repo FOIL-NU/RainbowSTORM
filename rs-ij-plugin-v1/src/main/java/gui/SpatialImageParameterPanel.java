@@ -297,9 +297,9 @@ public class SpatialImageParameterPanel extends JPanel {
                cropPositions[2]=wid;
                cropPositions[3]=height;
                controller.updateCropping(cropPositions);
-               //controller.setCrppos(cropPositions);
+               
                setParams();
-               //controller.setDefaults();
+               
                
                        }else{
                     IJ.error("Please select region to be cropped or specificy cropping parameters");
@@ -313,19 +313,7 @@ public class SpatialImageParameterPanel extends JPanel {
 
                    controller.updateCropping(cropPositions);
                    setParams();
-                  // controller.setCrppos(cropPositions);
-                   //controller.setDefaults();
-                   
-                   
-                   /* controller.updateCropping(cropPositions);
-                    controller.setADU(adu);
-                    controller.setPxSize(pxsiz);
-                controller.setbsLv(bslv);
-                controller.setGain(emg);
-                controller.setCrppos(cropPositions);*/
-                        
-                        
-                
+                  
             }
         }); 
              
@@ -337,12 +325,11 @@ public class SpatialImageParameterPanel extends JPanel {
               
                ArrayList<Double> crp_params;
                 try {
-                    
-                   
+                  
                  crp_params= controller.loadCropPos(textfieldCropPositions.getText());
-                 //IJ.log("XPos:"+crp_params.get(0));
+                
                   if (crp_params==null||crp_params.isEmpty()){
-                    //  IJ.error("Incorrect File Loaded");
+                     IJ.error("Incorrect File Loaded");
                       
                   }else{
                
@@ -381,8 +368,6 @@ public class SpatialImageParameterPanel extends JPanel {
                 controller.setCrppos(cropPositions);
                }
                
-                
-             
                 }else{ 
                    
                     IJ.error("Inputs must be real and non-negative");
@@ -397,14 +382,7 @@ public class SpatialImageParameterPanel extends JPanel {
         });
     }
          
-      public void updateCropParams(int rWidth, int rHeight){
-      
-       IJ.log("X Position Testing: " + rWidth);
-       //ftfWidth.setValue(new Integer(rWidth));
-       //ftfHeight.setValue(new Integer(rHeight));
-       
-    }
-      
+          
       public boolean isValidCrpParams(int xpos,int ypos,int wid,int hgh){
                   
           
@@ -451,33 +429,24 @@ public class SpatialImageParameterPanel extends JPanel {
                  double adu= ((Number)ftfADU.getValue()).doubleValue();
                  int bsLv=((Number)ftfBsLv.getValue()).intValue();
           
-               
-             
                 int xpos=Integer.parseInt(ftfXPosition.getText());
                 int ypos=Integer.parseInt(ftfYPosition.getText());
                 int wid=Integer.parseInt(ftfWidth.getText());
                 int hgh=Integer.parseInt(ftfHeight.getText());
-                   
-                /*int pxSz=Integer.parseInt(ftfPixSize.getText());
-                int bsLv=Integer.parseInt(ftfBsLv.getText());
-                double adu=Double.parseDouble(ftfADU.getText());
-                int emG=Integer.parseInt(ftfEmGain.getText());*/
-                
+               
                 int[] crpPos={xpos,ypos,wid,hgh};
                 
                 boolean flg = isValidParams(xpos,ypos,wid,hgh,pxSz,bsLv,adu,emG);
-                
-                IJ.log("Is Valid: "+flg);
-               // if(flg){
+               //if(flg){
                 controller.setADU(adu);
                 controller.setPxSize((double)pxSz);
-                IJ.log("PxSz="+pxSz);
+                
                 controller.setbsLv(bsLv);
                 controller.setGain(emG);
                 controller.setCrppos(crpPos);
+              // }
                 
-                
-               // }
+              
           }catch(ParseException e1){
                      IJ.error("Invalid Input");
                  }

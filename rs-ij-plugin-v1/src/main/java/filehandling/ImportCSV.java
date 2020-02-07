@@ -17,7 +17,7 @@ import javax.swing.JFrame;
 
 /**
  *
- * @author Janel
+ * @author Janel L Davis
  */
 public class ImportCSV {
     
@@ -81,12 +81,7 @@ public class ImportCSV {
             }
             
         }
-        
-       /* if(returnVal == JFileChooser.CANCEL_OPTION||returnVal ==JFileChooser.ABORT){
-          fc.cancelSelection();
-            
-        }*/
-        
+     
             return data;          
      }
      

@@ -31,14 +31,13 @@ import unmixing.Blinking;
 
 /**
  *
- * @author Janel
+ * @author Janel L Davis
  */
 public class VisSettingsPanel extends JPanel {
     
         private Analysis controller;
         private JComboBox visCombo;
         private JButton buttonUpdateImage;
-        //Visualization Parameters
         public static JFormattedTextField ftfMag;
         
     
@@ -114,12 +113,7 @@ public class VisSettingsPanel extends JPanel {
                  }catch(ParseException e1){
                      IJ.error("Invalid Input");
                  }
-                
-                   
-                    
-                
          
-             
             }
         });
             
@@ -127,11 +121,7 @@ public class VisSettingsPanel extends JPanel {
         
       @Override
             public void actionPerformed(ActionEvent e) {
-                    
-                   // int mag= Integer.parseInt(ftfMag.getText());
-                    //controller.setMag(mag);
-                       
-                       try{
+                 try{
                   ftfMag.commitEdit();
                   int mag=((Number)ftfMag.getValue()).intValue();
                       controller.setMag(mag);
@@ -147,37 +137,37 @@ public class VisSettingsPanel extends JPanel {
                        ArrayList<Double> centroids= new ArrayList<Double>();
       
         
-        ArrayList<Double> xps= new ArrayList<Double>();
-        ArrayList<Double> yps= new ArrayList<Double>();
-        ArrayList<Double> unc= new ArrayList<Double>();
+                       ArrayList<Double> xps= new ArrayList<Double>();
+                       ArrayList<Double> yps= new ArrayList<Double>();
+                       ArrayList<Double> unc= new ArrayList<Double>();
+
+
+                       int sz=BEs.size();
+
+
         
-      
-         int sz=BEs.size();
-         IJ.log("Current Cens: "+sz);
-        
-        
-        for( int i=0;i<sz;i++){
-            Blinking bE=BEs.get(i);
-            double tmp_c=bE.getCentroid();
-           
-            
-            double tmp_x=bE.getXPosition();
-            double tmp_y=bE.getYPosition();
-            double tmp_unc=bE.getUnc();
-            
-           
-            float [] t_spec=bE.getSpectrum();
-            
-           
-            centroids.add(tmp_c);
-          
-            xps.add(tmp_x);
-            yps.add(tmp_y);
-            unc.add(tmp_unc);
-          
-            
-         
-            }  
+            for( int i=0;i<sz;i++){
+                Blinking bE=BEs.get(i);
+                double tmp_c=bE.getCentroid();
+
+
+                double tmp_x=bE.getXPosition();
+                double tmp_y=bE.getYPosition();
+                double tmp_unc=bE.getUnc();
+
+
+                float [] t_spec=bE.getSpectrum();
+
+
+                centroids.add(tmp_c);
+
+                xps.add(tmp_x);
+                yps.add(tmp_y);
+                unc.add(tmp_unc);
+
+
+
+                }  
            
          double[] cens= ArrayUtils.toPrimitive(centroids.toArray(new Double[sz]));
        

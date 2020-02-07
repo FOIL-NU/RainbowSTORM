@@ -13,7 +13,7 @@ import unmixing.Blinking;
 
 /**
  *
- * @author Janel
+ * @author Janel Davis
  */
 public class GaussianRendering {
     
@@ -31,8 +31,7 @@ public class GaussianRendering {
         this.width = (int) ((width ));
         this.height = (int) ((height));
         
-         System.out.println("Blinking Image Width: " + this.width);
-        System.out.println("Blinking Image Height: " + this.height);
+      
        
         this.imgProc = new FloatProcessor(this.width, this.height);
         
@@ -63,6 +62,7 @@ public class GaussianRendering {
    
     
       protected void drawPoint(double x, double y,  double dx) {
+          
     
         int xt1=1;
         int xt2=this.width;
@@ -97,7 +97,7 @@ public class GaussianRendering {
                                
                                     double dify = idy - y_org;
 
-                                    double val =1// 2*0.125
+                                    double val =1
                                             * xerfdif
                                             * (erf((dify) / sqrt2dx) - erf((dify + 1) / sqrt2dx));
                                  

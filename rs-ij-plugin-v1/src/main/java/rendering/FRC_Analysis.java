@@ -5,7 +5,6 @@
  */
 package rendering;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.process.FloatProcessor;
 import static java.lang.Math.round;
@@ -20,7 +19,7 @@ import unmixing.Blinking;
 
 /**
  *
- * @author Janel
+ * @author Janel L Davis
  */
 public class FRC_Analysis {
  
@@ -85,7 +84,7 @@ public class FRC_Analysis {
           int ymin=(int) round(mn_Val.evaluate(yps,0,sz))-mxunc;
           
           double conv=pixelSize+0.5;
-            IJ.log("pixelsize: "+conv); 
+         
           int wid=(int) ((xmax-xmin)/conv);
           int hei=(int) ((ymax-ymin)/conv);
           

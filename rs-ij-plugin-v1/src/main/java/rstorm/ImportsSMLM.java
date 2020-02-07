@@ -21,7 +21,7 @@ import javax.swing.WindowConstants;
 
 /**
  *
- * @author Janel
+ * @author Janel Davis
  */
 public class ImportsSMLM implements PlugIn {
      JFrame mainFrame;

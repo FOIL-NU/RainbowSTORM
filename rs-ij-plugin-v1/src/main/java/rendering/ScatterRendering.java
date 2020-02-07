@@ -28,12 +28,9 @@ public class ScatterRendering {
     public ScatterRendering(int width, int height, double resolution) {
         this.resolution = resolution;
         
-        this.width = (int) ((width ));//+(2*resolution));
-        this.height = (int) ((height));//+(2*resolution));
-        
-         System.out.println("Blinking Image Width: " + this.width);
-        System.out.println("Blinking Image Height: " + this.height);
-      
+        this.width = (int) ((width ));
+        this.height = (int) ((height));
+       
         this.imgProc = new FloatProcessor(this.width, this.height);
         
     }

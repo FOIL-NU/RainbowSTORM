@@ -5,7 +5,6 @@
  */
 package gui;
 import ij.IJ;
-import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -20,32 +19,22 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import rstorm.Analysis;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Image;
-import java.awt.Window;
-
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
-import javax.swing.JDialog;
-import javax.swing.JEditorPane;
-import javax.swing.JScrollPane;
-import javax.swing.WindowConstants;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
+import rstorm.RS_Help;
 
 /**
  *
- * @author Janel
+ * @author Janel L Davis
  */
 public class VisbyClassPanel extends JPanel {
-      private Analysis controller;
-   private static final String url = "sSMLM_Classification.html";
-    private static final String ver = "2020_01";
-    private static final int WINDOW_WIDTH = 600;
-    private static final int WINDOW_HEIGHT = 600;
+    private Analysis controller;
+    private static final String url = "sSMLM_Classification.html";
+  
     private JButton buttonHelp;
     
      private JFormattedTextField ftfCh1;
@@ -142,8 +131,7 @@ public class VisbyClassPanel extends JPanel {
                                
                 
                  mc.gridy++;
-                 //chSelectionPanel.add(ch1Panel,mc);
-                  add(ch1Panel,mc);
+                 add(ch1Panel,mc);
                  
                    
                 JLabel labelCh2 = new JLabel("Green:     ");
@@ -162,8 +150,7 @@ public class VisbyClassPanel extends JPanel {
                 ch2Panel.add(checkboxCh2);
              
                  mc.gridy++;
-                 //chSelectionPanel.add(ch2Panel,mc);
-                  add(ch2Panel,mc);
+                 add(ch2Panel,mc);
                     
                 JLabel labelCh3 = new JLabel("Blue:        ");
                 ch3Panel.add(labelCh3);
@@ -181,10 +168,8 @@ public class VisbyClassPanel extends JPanel {
                 ch3Panel.add(checkboxCh3);
              
                  mc.gridy++;
-                
-                  add(ch3Panel,mc);
+                 add(ch3Panel,mc);
                  
-                    
                 JLabel labelCh4 = new JLabel("Yellow:     ");
                 ch4Panel.add(labelCh4);
                 ftfCh4= new JFormattedTextField();
@@ -200,12 +185,9 @@ public class VisbyClassPanel extends JPanel {
                 checkboxCh4.setSelected(false);
                 ch4Panel.add(checkboxCh4);
                 
-             
                  mc.gridy++;
+                 add(ch4Panel,mc);
                  
-                  add(ch4Panel,mc);
-                 
-                    
                 JLabel labelCh5 = new JLabel("Cyan:       ");
                 ch5Panel.add(labelCh5);
                 ftfCh5= new JFormattedTextField();
@@ -222,10 +204,8 @@ public class VisbyClassPanel extends JPanel {
                 ch5Panel.add(checkboxCh5);
              
                  mc.gridy++;
-                 //chSelectionPanel.add(ch5Panel,mc);
-                  add(ch5Panel,mc);
-                 
-                    
+                 add(ch5Panel,mc);
+                  
                 JLabel labelCh6 = new JLabel("Magenta: ");
                 ch6Panel.add(labelCh6);
                 ftfCh6= new JFormattedTextField();
@@ -317,13 +297,10 @@ public class VisbyClassPanel extends JPanel {
                    
                     String ch1_cw1_Val= ftfCh1.getText();
                     int ch1_cw1_Thres=Integer.parseInt(ch1_cw1_Val.replace(",",""));
-                    IJ.log("Centroid Window Thres: "+ch1_cw1_Thres);
-                    
+                                       
                     String ch1_cw2_Val= ftfCh1_2.getText();
                     int ch1_cw2_Thres=Integer.parseInt(ch1_cw2_Val.replace(",",""));
-                    IJ.log("Centroid Window Thres: "+ch1_cw2_Thres);
-                   
-                    
+                                       
                     ch1_valid =validRange(ch1_cw1_Thres,ch1_cw2_Thres);
                     ch1[0]=ch1_cw1_Thres;
                     ch1[1]=ch1_cw2_Thres;
@@ -347,8 +324,7 @@ public class VisbyClassPanel extends JPanel {
                     
                     String ch2_cw1_Val= ftfCh2.getText();
                     int ch2_cw1_Thres=Integer.parseInt(ch2_cw1_Val.replace(",",""));
-                    IJ.log("Centroid Window Thres: "+ch2_cw1_Thres);
-                    
+                                     
                     String ch2_cw2_Val= ftfCh2_2.getText();
                     int ch2_cw2_Thres=Integer.parseInt(ch2_cw2_Val.replace(",",""));
                     
@@ -375,8 +351,7 @@ public class VisbyClassPanel extends JPanel {
                         
                     String ch3_cw1_Val= ftfCh3.getText();
                     int ch3_cw1_Thres=Integer.parseInt(ch3_cw1_Val.replace(",",""));
-                    IJ.log("Centroid Window Thres: "+ch3_cw1_Thres);
-                    
+                                       
                     String ch3_cw2_Val= ftfCh3_2.getText();
                     int ch3_cw2_Thres=Integer.parseInt(ch3_cw2_Val.replace(",",""));
                     
@@ -406,8 +381,7 @@ public class VisbyClassPanel extends JPanel {
                     }
                     String ch4_cw1_Val= ftfCh4.getText();
                     int ch4_cw1_Thres=Integer.parseInt(ch4_cw1_Val.replace(",",""));
-                    IJ.log("Centroid Window Thres: "+ch4_cw1_Thres);
-                    
+                                     
                     String ch4_cw2_Val= ftfCh4_2.getText();
                     int ch4_cw2_Thres=Integer.parseInt(ch4_cw2_Val.replace(",",""));
                     
@@ -437,8 +411,7 @@ public class VisbyClassPanel extends JPanel {
                     }
                     String ch5_cw1_Val= ftfCh5.getText();
                     int ch5_cw1_Thres=Integer.parseInt(ch5_cw1_Val.replace(",",""));
-                    IJ.log("Centroid Window Thres: "+ch5_cw1_Thres);
-                    
+                                      
                     String ch5_cw2_Val= ftfCh5_2.getText();
                     int ch5_cw2_Thres=Integer.parseInt(ch5_cw2_Val.replace(",",""));
                     
@@ -478,7 +451,7 @@ public class VisbyClassPanel extends JPanel {
                     ch6_valid =validRange(ch6_cw1_Thres,ch6_cw2_Thres);
                     ch6[0]=ch6_cw1_Thres;
                     ch6[1]=ch6_cw2_Thres;
-                    ch6[2]=ch6_active;//Math.abs(ch2_color);
+                    ch6[2]=ch6_active;
                     ch6[3]=ch6_showIm;
                     }
                     
@@ -488,7 +461,7 @@ public class VisbyClassPanel extends JPanel {
                     
                    boolean showPlots = checkboxShowPlots.isSelected();
                    
-                    IJ.log("Channels: "+channels.size());
+                    
                     String outString = "Invalid Channels: "; 
                     
                     for(int v=0;v<channels.size();v++){
@@ -578,54 +551,11 @@ public class VisbyClassPanel extends JPanel {
         });
          buttonHelp.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+              
+             RS_Help rsHelp = new RS_Help();  
+              rsHelp.launchHelp(url);
                 
-                  try {
-           
-            JDialog dialog = new JDialog(IJ.getInstance(), "RainbowSTORM sSMLM Help(" + ver + ")");
-            if(IJ.isJava17()) {
-                dialog.setType(Window.Type.UTILITY);
             }
-           //dialog.setdef 
-           dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            dialog.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE); //for use within modal dialog
-            final JEditorPane aboutPanel = new JEditorPane();
-            aboutPanel.setBorder(BorderFactory.createEmptyBorder());
-            aboutPanel.setEditable(false);
-            aboutPanel.addHyperlinkListener(new HyperlinkListener(){
-              @Override
-                    public void hyperlinkUpdate(HyperlinkEvent event){
-                    if(event.getEventType() ==HyperlinkEvent.EventType.ACTIVATED){
-                        try{
-                            if(event.getURL().toString().contains("https://")){
-                             Desktop.getDesktop().browse(event.getURL().toURI());
-                            }else{
-                                
-                           aboutPanel.setPage(event.getURL());
-                            }
-                            
-                        }catch(Exception ioe){
-                            System.err.println("Error loading url from link:"+ioe);
-                          
-                        }
-                    }
-                    }
-            });               
-            URL resource = getClass().getClassLoader().getResource(url);
-           
-            JScrollPane scrollPane = new JScrollPane(aboutPanel);
-            scrollPane.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
-            dialog.getContentPane().add(scrollPane);
-            aboutPanel.setPage(resource);
-            
-          
-            dialog.pack();
-            dialog.setLocationRelativeTo(null);
-            dialog.setVisible(true);
-            } catch(Exception e2) {
-            IJ.handleException(e2);
-        }
-            }
-    
     });
    
         
@@ -635,10 +565,9 @@ public class VisbyClassPanel extends JPanel {
      private boolean validRange(int rng1, int rng2){
 
         boolean flg= false;
-        boolean flg1=rng1<380||rng2>900||rng1<0||rng2<0||rng1>=rng2;
+        boolean flg1=rng1<380||rng2>870||rng1<0||rng2<0||rng1>=rng2;
         if(flg1){
-          //  IJ.error("Invalid spectrum Range selected. Please select values from 380 nm : 900 nm)");
-
+         
             }
    
 

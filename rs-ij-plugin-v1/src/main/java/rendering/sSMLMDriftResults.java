@@ -22,14 +22,13 @@ import unmixing.Blinking;
 public class sSMLMDriftResults {
     
     
-    //interpolated drift
     private PolynomialSplineFunction xFunction;
     private PolynomialSplineFunction yFunction;
     //actual estimated drift data
     private double[] driftDataFrame;
     private double[] driftDataX;
     private double[] driftDataY;
-    //
+ 
     private int minFrame;
     private int maxFrame;
  

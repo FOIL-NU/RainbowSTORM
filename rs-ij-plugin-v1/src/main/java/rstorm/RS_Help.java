@@ -24,10 +24,10 @@ import javax.swing.event.HyperlinkListener;
 
 /**
  *
- * @author Janel
+ * @author Janel Davis
  */
 public class RS_Help implements PlugIn {
-    private static final String url = "AboutRainbowSTORM.html";
+    private static final String url1 = "AboutRainbowSTORM.html";
     private static final String ver = "2020_01";
     private static final int WINDOW_WIDTH = 600;
     private static final int WINDOW_HEIGHT = 600;
@@ -35,10 +35,11 @@ public class RS_Help implements PlugIn {
     
      @Override
     public void run(String arg){
-        
-     /*   try {
-    Desktop.getDesktop().browse(new URL("https://github.com/FOIL-NU/RainbowSTORM/wiki").toURI());
-} catch (Exception e) {}*/
+        launchHelp(url1);
+    }
+    
+    public void launchHelp(String url){
+   
         
       try {
            
@@ -47,10 +48,9 @@ public class RS_Help implements PlugIn {
                 dialog.setType(Window.Type.UTILITY);
             }
            
-            dialog.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE); //for use within modal dialog
+            dialog.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE); 
             final JEditorPane aboutPanel = new JEditorPane();
-          
-      //  aboutPanel.setEditorKit((EditorKit) c2.newInstance());
+      
             aboutPanel.setBorder(BorderFactory.createEmptyBorder());
            aboutPanel.setEditable(false);
             aboutPanel.addHyperlinkListener(new HyperlinkListener(){
@@ -65,9 +65,7 @@ public class RS_Help implements PlugIn {
                                 
                            aboutPanel.setPage(event.getURL());
                             }
-                          
-                            
-                            
+                         
                         }catch(Exception ioe){
                             System.err.println("Error loading url from link:"+ioe);
                           
@@ -76,18 +74,12 @@ public class RS_Help implements PlugIn {
                     }
             });            
             URL resource = getClass().getClassLoader().getResource(url);
-            //File file = new File(resource.toURI());
-            //Desktop.getDesktop().open(file);
-           
             
             JScrollPane scrollPane = new JScrollPane(aboutPanel);
             scrollPane.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
             dialog.getContentPane().add(scrollPane);
             aboutPanel.setPage(resource);
-            
-            //aboutPanel.setPa
-           // htmlBrowser.setPage(Help.getUrl(url));
-
+           
             dialog.pack();
             dialog.setLocationRelativeTo(null);
             dialog.setVisible(true);

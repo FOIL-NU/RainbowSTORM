@@ -23,7 +23,7 @@ import java.awt.Dimension;
 
 /**
  *
- * @author Janel
+ * @author Janel L Davis
  */
 public class BackgroundSubtractionPanel extends JPanel {
     

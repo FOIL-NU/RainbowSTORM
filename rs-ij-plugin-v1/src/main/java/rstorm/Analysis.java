@@ -109,7 +109,7 @@ import org.jfree.chart.util.ShapeUtils;
 import rendering.GaussianRendering;
 
 import rendering.sSMLMDriftResults;
-import rendering.sSMLMLambdaColoredRendering;
+import rendering.sSMLMPseudoColoredRendering;
 import rendering.sSMLM_3D;
 
 
@@ -205,22 +205,14 @@ public class Analysis implements PlugIn {
     
     @Override
     public void run(String arg) {
-        //IJ.setDebugMode(true);
-         IJ.log("Analysis started");
+      
         ImagePlus stack = IJ.getImage();
-        FileInfo fi = stack.getOriginalFileInfo(); // need to use original file info or the info is not correct
+        FileInfo fi = stack.getOriginalFileInfo(); 
         
         this.currentImageDirectory = fi.directory;
       
         setupGUI();
     }   
-    
-    
-    /*
-        Opens a dialog box asking the user to locate a CSV file
-        Reads the CSV file line by line and adds it to a JTable
-        Creates a new window for the CSV file.
-    */
     
     public void fireUpdateStats(){
          pcSupport.firePropertyChange(Analysis.UPDATE_STATS, false, true);
@@ -301,8 +293,7 @@ public class Analysis implements PlugIn {
              
                 px_shift=ival;
                 sp_disp=((mxx-mnx)/(mxy-mny));
-                IJ.log("Disperion: "+sp_disp);
-                
+               
                 caliLoaded=true;
                 pcSupport.firePropertyChange(Analysis.CALI_LOADED, false, true);
         } else{IJ.error("Incorrect File Loaded");}
@@ -553,7 +544,7 @@ public class Analysis implements PlugIn {
         gui.LoadLocalizationsPanel.textfieldFilePath.setText(fName);
         if(data!=null&&!data.isEmpty()){
         String[] columnNames = data.get(0);
-        IJ.log("Number of Columns "+ columnNames.length);
+       
         for(int k=0;k<columnNames.length;k++){
             String cName= columnNames[k];
             
@@ -588,7 +579,6 @@ public class Analysis implements PlugIn {
                 if(sig_col==-1){    
                 sig_col=k;
                 
-                  IJ.log("cName: "+cName+" ColNum:"+k+"  "+sig_col);
                 }
             }
            }
@@ -777,8 +767,6 @@ public class Analysis implements PlugIn {
             for(int vt=0;vt<titles.length;vt++){
                
                         if(titles[vt].contains("sSMLM")){  
-                        IJ.log(titles[vt]);
-                        
                        
                         IJ.selectWindow(titles[vt]);
                         IJ.run("Close");
@@ -788,12 +776,10 @@ public class Analysis implements PlugIn {
             }
             
           
-            //IJ.sel
              String[] titles2= WindowManager.getNonImageTitles();
             for(int yt=0;yt<titles2.length;yt++){
               
                         if(titles2[yt].contains("sSMLM")){    
-                           IJ.log(titles2[yt]);  
                             if(titles2[yt].contains("Multi-Channel Plots")){
                             compPlot.dispose();
                         }else{
@@ -824,13 +810,11 @@ public class Analysis implements PlugIn {
               s_spectra[i]=cur_val;
               Double cval=(double) cur_val;
               if(cval.isNaN()||cval.isInfinite()){
-                  IJ.log("Error with sum Spec");
+                  IJ.error("Pixels can't be NaN or Infinity");
               }
-              
               
            }
        
-        
         return s_spectra;
     }
     
@@ -894,7 +878,7 @@ public class Analysis implements PlugIn {
     }
     
     public void setMag(int mag){
-        IJ.log("Magnification: "+mag);
+       
         magnification = mag;
         
     }
@@ -921,14 +905,10 @@ public class Analysis implements PlugIn {
     }
     
     public void setCrppos(int[] cropPos){
-        
-        IJ.log("x:"+cropPos[0]);
-        IJ.log("y:"+cropPos[1]);
-        IJ.log("width:"+cropPos[2]);
-        IJ.log("height:"+cropPos[3]);
+       
         if(cropPos[2]==0||cropPos[3]==0){
             this.setROIflg(true);
-            IJ.log("ROI?: "+isROI);
+           
         }
         crp_Pos =cropPos;
     }
@@ -948,8 +928,7 @@ public class Analysis implements PlugIn {
             
             mag= magnification;
             }
-              IJ.log("Magnification:"+mag);
-              if(mag<=0){
+                if(mag<=0){
                   mag=5;
                   gui.VisSettingsPanel.ftfMag.setValue(mag);
                   IJ.error("Magnification must be positive and non-zero. Default value used.");
@@ -1220,7 +1199,7 @@ public class Analysis implements PlugIn {
                      fitFlg=0;
                  }
                   boolean flg1 =gui.SpectraExtractionPanel.validRange(rng1,rng2,stp);
-                 boolean flg2 = gui.SpectraExtractionPanel.validParams(bw,px_Size,EMG,adu,bsLv,specWidth);
+                 boolean flg2 = gui.SpectraExtractionPanel.validParams(bw,px_Size,EMG,adu,bsLv,specWidth,ycomp);
                  
                  if(flg1&&flg2){
  
@@ -1231,7 +1210,7 @@ public class Analysis implements PlugIn {
         params[2]=(double) rng2;
         params[3]=(double)stp;
         params[4]=(double)px_Size;
-        //params[5]=sp_disp;
+        
         params[5]=(double) org_X;
         params[6]=(double) org_Y;
         params[7]=(double) org_Wid;
@@ -1465,7 +1444,7 @@ public class Analysis implements PlugIn {
                     
             String[] titles= WindowManager.getImageTitles();
             for(int vt=0;vt<titles.length;vt++){
-                IJ.log(titles[vt]);
+              
                   if(titles[vt]=="Cropped Region 1"){
                         IJ.selectWindow("Cropped Region 1");
                         IJ.run("Close");
@@ -1485,7 +1464,7 @@ public class Analysis implements PlugIn {
                      }
                     
                      if(titles[vt]=="Background-Subtracted Spectral Images"){
-                        IJ.log("test");
+                       
                        IJ.selectWindow("Background-Subtracted Spectral Images");
                         IJ.run("Close");
                    
@@ -1496,9 +1475,7 @@ public class Analysis implements PlugIn {
                         IJ.run("Close");
                    
                      }
-                
-                
-            }
+                  }
        
        if(lineFrame!=null){
        lineFrame.dispose();
@@ -1575,7 +1552,7 @@ public class Analysis implements PlugIn {
         
         
          int sz=curBEs.size();
-        IJ.log("Current Size:"+sz);
+        
            for( int i=0;i<sz;i++){
             Blinking bE=curBEs.get(i);
             
@@ -1654,8 +1631,7 @@ public class Analysis implements PlugIn {
         double pixSz=this.getPxSize()+0.5;
         double res= pixSz/mag; 
         ArrayList<Blinking> n_BEs = new ArrayList<Blinking>();
-        ArrayList<Integer> n_ids = new ArrayList<Integer>();
-        
+       
         int xthres1=cropPositions[0];
         int ythres1=cropPositions[1];
         
@@ -1664,7 +1640,7 @@ public class Analysis implements PlugIn {
         
         int cnt=0;
         int sz= curBEs.size();
-        IJ.log("Old Size:"+sz);
+       
         for( int i=0;i<sz;i++){
             Blinking bE=curBEs.get(i);
            // int id=curIDs.get(i);
@@ -1708,7 +1684,7 @@ public class Analysis implements PlugIn {
         ArrayList<Blinking> n_BEs = new ArrayList<Blinking>();
         
         int sz= curBEs.size();
-        IJ.log("Old Size:"+sz);
+       
         for( int i=0;i<sz;i++){
             Blinking bE=curBEs.get(i);
             
@@ -2093,11 +2069,9 @@ public class Analysis implements PlugIn {
       public XYDataset drawAvgSpecPlot(float[] avgSp, int[] wvs,String slb){
     
        int sz= avgSp.length;
-       IJ.log("Array Size:"+sz);
-       
+     
        int sz2= wvs.length;
-       IJ.log("Wave Array Size:"+sz2);
-       
+      
        XYSeriesCollection dataset =new XYSeriesCollection();
        
        XYSeries x_series =new XYSeries(slb);
@@ -2143,10 +2117,7 @@ public class Analysis implements PlugIn {
         currentBEs=oldBEs;
         int o_sz2=currentBEs.size();
         
-        // curIDs.clear();
-        // curIDs=oldIDs;
-        
-        IJ.log("Updated Data:"+o_sz2);
+      
         postProcessString="";
         crp_Pos=null;
          crp_Pos=org_crp_Pos;
@@ -2311,7 +2282,6 @@ public class Analysis implements PlugIn {
           HistogramWindow idHistWin =new  HistogramWindow(idHist);
           idHistWin.show();
           
-          IJ.log(t_c);
              break;
              case 1:
                 t_c =("sSMLM frame");
@@ -2328,8 +2298,6 @@ public class Analysis implements PlugIn {
           HistogramWindow frHistWin =new  HistogramWindow(frHist);
           frHistWin.show();
           
-          IJ.log(t_c);
-               
              break;
                case 2:
               
@@ -2560,7 +2528,7 @@ public class Analysis implements PlugIn {
             default:
              
                 t_c =("");
-               IJ.log("Nothing Selected");
+               IJ.error("No field selected");
                 break;
         }
         
@@ -2783,7 +2751,6 @@ public class Analysis implements PlugIn {
           HistogramWindow speSigHistWin =new  HistogramWindow(speSigHist);
           speSigHistWin.show();
           
-          //IJ.log(t_c);
              break;
               case 12:
                 
@@ -2806,7 +2773,7 @@ public class Analysis implements PlugIn {
             default:
                
                 t_c =("");
-               IJ.log("Nothing Selected");
+               IJ.error("No field selected");
                 break;
         }
         
@@ -2851,11 +2818,7 @@ public class Analysis implements PlugIn {
             }    
         }
          updateVisData(n_BEs);
-         //Update cIds
-         
         
-                     
-          IJ.log(t_c);
              break;
              case 1:
              t_c =("frame");
@@ -2993,7 +2956,7 @@ public class Analysis implements PlugIn {
             
         }
          updateVisData(n_BEs);
-          IJ.log(t_c);
+         
              break;
              case 6:
                 
@@ -3001,7 +2964,6 @@ public class Analysis implements PlugIn {
                 str_units=" nm";
                   cnt=0;
         
-        IJ.log("Old Size:"+sz);
         for( int i=0;i<sz;i++){
             Blinking bE=curBEs.get(i);
             
@@ -3024,7 +2986,7 @@ public class Analysis implements PlugIn {
             
         }
          updateVisData(n_BEs);
-          IJ.log(t_c);
+        
              break;
               case 7:
                 
@@ -3032,7 +2994,7 @@ public class Analysis implements PlugIn {
                 str_units=" nm";
                 cnt=0;
                 ifrm_flg=true; 
-        IJ.log("Old Size:"+sz);
+        
         for( int i=0;i<sz;i++){
             Blinking bE=curBEs.get(i);
             
@@ -3356,8 +3318,7 @@ public class Analysis implements PlugIn {
                  t_c =("z");
                  str_units=" nm";
                     cnt=0;
-        
-        IJ.log("Old Size:"+sz);
+       
         for( int i=0;i<sz;i++){
             Blinking bE=curBEs.get(i);
             
@@ -3411,7 +3372,6 @@ public class Analysis implements PlugIn {
                 str_units=" nm";
                   cnt=0;
         
-        IJ.log("Old Size:"+sz);
         for( int i=0;i<sz;i++){
             Blinking bE=curBEs.get(i);
             
@@ -3643,7 +3603,7 @@ public class Analysis implements PlugIn {
               
                 t_c =("");
                 str_units="";
-               IJ.log("Nothing Selected");
+               IJ.error("No field selected");
                 break;
         }
            
@@ -3727,7 +3687,8 @@ public class Analysis implements PlugIn {
         int sz=n_BEs.size();
         int sp_sz=0;
         int cnt=0;
-      
+        
+      if(sz>0){
         for( int i=0;i<sz;i++){
             Blinking bE=n_BEs.get(i);
             int id =i+1;
@@ -3816,6 +3777,9 @@ public class Analysis implements PlugIn {
        IJ.showStatus("Launching Visualization Screen...");
      
        this.launchVisualization(n_BEs,fy,true);
+      }else{
+          IJ.error("No localizations found");
+      }
     
     }
     
@@ -4023,9 +3987,7 @@ public class Analysis implements PlugIn {
                 if(is3D){
              
                    for(int i1=1;i1<sz;i1++){ 
-                     
-                    IJ.log("i: "+i1);  
-                      
+                    
                     String[] row=data.get(i1); 
                     
                     id =Double.parseDouble(row[id_col]);
@@ -4168,14 +4130,7 @@ public class Analysis implements PlugIn {
             }
           }   
            
-          
-        /*if(avg_bk<0){
-            IJ.log("Auto bk Sub");
-        }else
-        {
-            IJ.log("Global Bk");
-        }*/
-       
+      
         this.backgroundImage = null;
         this.firstOrderImage=null;
              boolean wnOpen=false;
@@ -4428,7 +4383,7 @@ public class Analysis implements PlugIn {
         int ind=0;
         for(int v=0;v<wid;v++){
             float tmp =f.getPixelValue(v,0);
-            //IJ.log("Val: "+tmp);
+          
             rt_vs[ind]=tmp;
             ind++;
         }
@@ -4519,12 +4474,6 @@ public class Analysis implements PlugIn {
         String[] columnNames = data.get(0);
         boolean flg1 =columnNames[0].equals("Parameters");
         boolean flg2= columnNames[1].equals("Values");
-        
-        IJ.log(columnNames[0]);
-        IJ.log(columnNames[1]);
-        IJ.log(Boolean.toString(flg1));
-        IJ.log(Boolean.toString(flg2));
-        
        
         if(flg1&&flg2){
        
@@ -4559,7 +4508,7 @@ public class Analysis implements PlugIn {
       public void setPixelSize(){
          double px=Double.parseDouble(gui.SpatialImageParameterPanel.ftfPixSize.getText());
          px_Size = px;
-        // return  Double.parseDouble(gui.SpatialImageParameterPanel.ftfPixSize.getText());
+       
      }
      
      
@@ -4567,9 +4516,7 @@ public class Analysis implements PlugIn {
              ImagePlus img = IJ.getImage();
              ImageProcessor ip = img.getProcessor();
              Rectangle roi = ip.getRoi();
-             
-             IJ.log("Roi no selection:"+roi.width);
-           
+            
          if (roi.width == ip.getWidth() && roi.height == ip.getHeight()) {
          
           int[] cropPositions ={0,0,0,0};
@@ -4640,13 +4587,13 @@ public class Analysis implements PlugIn {
         ImageStack stack2 = new ImageStack(roi2.width, roi2.height);
         
         ImageStack original = img.getStack();
-        org_X=roiXPosition;//roiXPosition;//original.getWidth()-roi.width;//DEBUG this
+        org_X=roiXPosition;
         org_Y=roiYPosition;
         org_Wid=original.getWidth()-r2_Width;
         
        int offv = Integer.parseInt(gui.SpatialImageParameterPanel.ftfBsLv.getText());
        float offset=(float) offv;
-       IJ.log("Offset"+offset);
+      
        FloatProcessor off_img = new FloatProcessor(roi2.width, roi2.height);
        for(int k=1;k<roi2.width;k++){
            for(int j=1;j<roi2.height;j++){
@@ -4690,15 +4637,16 @@ public class Analysis implements PlugIn {
     }
     
     
-    public void cropROI(int[] cropPositions){
+    public boolean cropROI(int[] cropPositions){
          ImagePlus img = IJ.getImage();
          ImageProcessor ip = img.getProcessor();
          Rectangle roi = ip.getRoi();
-        
+         boolean roiflg;
          
          if (roi.width == ip.getWidth() && roi.height == ip.getHeight()) {
            
             IJ.error("Please select region to be cropped");
+            roiflg=false;
         }else{
      
         
@@ -4724,7 +4672,7 @@ public class Analysis implements PlugIn {
         
         ImagePlus nImg=new ImagePlus("Cropped Region 1", stack1);
       
-        }
+        
          applyROI(cropPositions);
          
              String x= "X= "+Integer.toString(cropPositions[0]);
@@ -4737,7 +4685,9 @@ public class Analysis implements PlugIn {
          }else{
              postProcessString = postProcessString+" + "+st;
          }
-        
+           roiflg=true;
+         }
+        return roiflg;
     }
     
     public static ImageProcessor crop(ImageProcessor ip, Rectangle rect) {
@@ -4830,11 +4780,7 @@ public class Analysis implements PlugIn {
          double resolution= conv/mag;
      
         int v =this.getVisMethod();
-        IJ.log("Mag="+mag);
-        IJ.log("Vismethod="+v);
-        IJ.log("Num NB="+bEs.size());
-        IJ.log("PxSz="+getPixelSize());
-        IJ.log("Conv="+conv);
+        
         switch(v){
             case 0:
          ScatterRendering sr = new ScatterRendering(width, height, resolution);
@@ -4881,13 +4827,13 @@ public class Analysis implements PlugIn {
         System.out.println("Blinking Image Height: " + height);
         
     
-        sSMLMLambdaColoredRendering stcr = new sSMLMLambdaColoredRendering(width, height, resolution);
+        sSMLMPseudoColoredRendering stcr = new sSMLMPseudoColoredRendering(width, height, resolution);
         int[] nRng= stcr.setRng(mn_c,mx_c,stp);
         
         ArrayList<Color> cols =stcr.getColRng(mn_c,mx_c,nRng);
        
         stcr.renderTCImage(BEs,nRng,cols);
-        stcr.drawLegend(nRng,cols);
+        stcr.drawColorbar(nRng,cols);
        
         ImagePlus img = stcr.getImage();
         img.show();
@@ -4906,13 +4852,13 @@ public class Analysis implements PlugIn {
     
         int stp=1;
     
-        sSMLMLambdaColoredRendering stcr = new sSMLMLambdaColoredRendering(width, height, resolution);
+        sSMLMPseudoColoredRendering stcr = new sSMLMPseudoColoredRendering(width, height, resolution);
         int[] nRng= stcr.setRng(mn_c,mx_c,stp);
       
         ArrayList<Color> cols =stcr.getColRng(mn_c,mx_c,nRng);
         
         stcr.renderTCROI(BEs,nRng,cols,xmin,ymin);
-        stcr.drawLegend(nRng,cols);
+        stcr.drawColorbar(nRng,cols);
        
         ImagePlus img = stcr.getImage();
         img.show();
@@ -4982,7 +4928,7 @@ public class Analysis implements PlugIn {
           if(mxunc<=0||tmp_val>1000){
               tmp_val=1;
           }
-          IJ.log("Tmp Val:"+tmp_val);
+         
           int xmax=(int) round(mx_Val.evaluate(xpos,0,sz))+tmp_val;
           int ymax=(int) round(mx_Val.evaluate(ypos,0,sz))+tmp_val;
           int zmax=(int) round(mx_Val.evaluate(zpos,0,sz));
@@ -4994,11 +4940,9 @@ public class Analysis implements PlugIn {
           int zmin=(int) round(mn_Val.evaluate(zpos,0,sz));
           
           int zRng=Math.abs(zmax-zmin);
-          IJ.log("zstep:"+zStep);
-          IJ.log("Min: "+zmin+" Max: "+zmax);
-          IJ.log("ZRNG: "+zRng);
+        
           int sz_z= (int) Math.round(zRng/zStep);
-          IJ.log("num frames:" +sz_z);
+         
           
            if(ymin<0){
               ymin=0;
@@ -5019,12 +4963,11 @@ public class Analysis implements PlugIn {
         int height=0;
      
          int stp_sz=(int)(mxunc/conv);
-         IJ.log("Roi?"+isROI);
-         
+        
          if(!isROI){
              
-        width=r_Wid*mag;//crp_Pos[2]*mag;//cropPos[2];//(Integer.parseInt(gui.SpatialImageParameterPanel.ftfWidth.getText())+stp_sz)*mag;
-        height=r_Hei*mag;//crp_Pos[3]*mag;//(Integer.parseInt(gui.SpatialImageParameterPanel.ftfHeight.getText())+stp_sz)*mag;
+        width=r_Wid*mag;
+        height=r_Hei*mag;
          
          if(width<=0){
               width = wid*mag;
@@ -5052,8 +4995,9 @@ public class Analysis implements PlugIn {
         int nz=zmin+zStep;
         ArrayList<Blinking> zBEs= new ArrayList<Blinking>();
         
-           
+        sSMLMPseudoColoredRendering stcr = new sSMLMPseudoColoredRendering(width, height, resolution);    
         sSMLM_3D stcr3D = new sSMLM_3D(width, height, resolution);
+        
         int[] nRng= stcr3D.setRng(mn1,mx1,stp);
       
         ArrayList<Color> cols =stcr3D.getColRng(mn1,mx1,nRng);
@@ -5062,7 +5006,7 @@ public class Analysis implements PlugIn {
           
             for(int j=0;j<sz;j++){
                 int crZ=(int) Math.round(zps.get(j));
-                //IJ.log("Cur Z: "+crZ);
+               
                 if(crZ>curZ&&crZ<nz){
                     zBEs.add(BEs.get(j));
                 }
@@ -5102,7 +5046,7 @@ public class Analysis implements PlugIn {
         ContrastEnhancer ce = new ContrastEnhancer();
         ce.stretchHistogram(out, 0.35);
         
-        stcr3D.drawLegend(nRng, cols);
+        stcr.drawColorbar(nRng, cols);
       
      }
   
@@ -5116,8 +5060,7 @@ public class Analysis implements PlugIn {
          double conv=getPixelSize()+0.5;
         
          int stp_sz=(int)(mxunc/conv);
-         IJ.log("Roi?"+isROI);
-         
+                  
          if(!isROI){
              
         width=r_Wid*mag;
@@ -5137,15 +5080,12 @@ public class Analysis implements PlugIn {
           height =hei*mag;
          }
       
-         IJ.log("Width: "+width);
-         IJ.log("Height: "+height);
-    
         double resolution= conv/mag;
      
         int v =this.getVisMethod();
        if(width>0&height>0){
         int stp=1;
-        sSMLMLambdaColoredRendering stcr = new sSMLMLambdaColoredRendering(width, height, resolution);
+        sSMLMPseudoColoredRendering stcr = new sSMLMPseudoColoredRendering(width, height, resolution);
         int[] nRng= stcr.setRng(mn_c,mx_c,stp);
       
         ArrayList<Color> cols =stcr.getColRng(mn_c,mx_c,nRng);
@@ -5256,9 +5196,7 @@ public class Analysis implements PlugIn {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
-             // stack trace as a string
-            
-            IJ.log(sw.toString());
+          
         }
         isROI=false;
         mainFrame = new JFrame("RainbowSTORM: sSMLM Analysis");

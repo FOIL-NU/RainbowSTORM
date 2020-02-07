@@ -25,7 +25,7 @@ import rstorm.Analysis;
 
 /**
  *
- * @author Brian T. Soetikno
+ * @author Brian T. Soetikno and Janel L Davis
  */
 public class LoadLocalizationsPanel extends JPanel {
     private Analysis controller;
@@ -112,7 +112,7 @@ public class LoadLocalizationsPanel extends JPanel {
                 } catch (IOException ex) {
                     Logger.getLogger(LoadLocalizationsPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                //controller.setDefaults();
+               
                 controller.displayCSVFile();
                 
               
