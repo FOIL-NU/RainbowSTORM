@@ -559,7 +559,7 @@ public class Calibration implements PlugIn{
     
      
    private void calibrate(int idx){
-    
+    try{
         //pixels
         double[] xData = new double[maxima.size()-1];
         
@@ -763,7 +763,9 @@ public class Calibration implements PlugIn{
         }else{
                     IJ.error(" Wavelength inputs must be from 400 nm too 850 nm");
                     }
-       
+    }catch(ArrayIndexOutOfBoundsException e){
+        IJ.error("Unable to fit current inputs. Please update the inputs and try again.");
+    }
 
    }
    

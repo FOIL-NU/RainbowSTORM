@@ -2010,7 +2010,7 @@ public class Analysis implements PlugIn {
        private JFreeChart createHistChart(IntervalXYDataset dataset,Color[] col) { 
            int snum =col.length;
            JFreeChart chart = ChartFactory.createHistogram( "Histogram: Spectral Centroids",
-                   "Spectral Centroid [nm]",
+                   "Spectral Centroids [nm]",
                    "Count",
                     dataset,
                    PlotOrientation.VERTICAL, 
@@ -2049,7 +2049,7 @@ public class Analysis implements PlugIn {
         int snum=col.length;          
        JFreeChart chart = ChartFactory.createScatterPlot(
                 "Centroids Vs Photons",
-                "Spectral Centroid [nm]",
+                "Spectral Centroids [nm]",
                 "Spectral Photons",
                 dset,PlotOrientation.VERTICAL,true,true,false);
      
@@ -2099,7 +2099,7 @@ public class Analysis implements PlugIn {
        
        JFreeChart chart = ChartFactory.createXYLineChart(
                slb,
-                "Wavelength (nm)",
+                "Wavelength [nm]",
                 "Intensity a.u.",
                 dset,PlotOrientation.VERTICAL,true,true,false);
        return chart;
@@ -2149,7 +2149,7 @@ public class Analysis implements PlugIn {
 }
 
     public void saveBlinkingSpectra(String filename) throws FileNotFoundException, IOException {
-        // Either load from the last image directory or the current image directory
+      
          ArrayList<Blinking> BEs=currentBEs;
          ExportCSV ex= new ExportCSV();
          int spc_sz=fy.length;
@@ -2163,7 +2163,6 @@ public class Analysis implements PlugIn {
         String [] f_header =ArrayUtils.addAll(header,s_header);
         ArrayList<String[]> data= new ArrayList<String[]>();
         
-        ArrayList<String[]> s_data = new ArrayList<String[]>();
         ArrayList<String[]> f_data = new ArrayList<String[]>();
                 
         for(int i =0; i<BEs.size();i++){
@@ -2190,7 +2189,7 @@ public class Analysis implements PlugIn {
                 for(int j=0;j<spc_sz;j++){
                     s_prms[j]=Float.toString(spec[j]);
                     }
-                s_data.add(s_prms);
+       
                 String[] f_prms=ArrayUtils.addAll(prms,s_prms);
                 f_data.add(f_prms);
          
