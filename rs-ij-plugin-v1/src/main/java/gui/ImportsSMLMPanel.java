@@ -44,8 +44,7 @@ public class ImportsSMLMPanel extends JPanel {
  
     private JFrame imsFrame;
     private JButton buttonHelp;
-    private JButton buttonLoadSpectra;
-     private JButton buttonLoadSpectraData;
+    private JButton buttonLoadSpectraData;
     public static JTextField textfieldLoadSpectraDataFilename;
     private boolean csvLoaded;
     private JButton buttonLoadVisualization;
@@ -54,7 +53,7 @@ public class ImportsSMLMPanel extends JPanel {
  
     public ImportsSMLMPanel(Analysis sSMLM, JFrame ims){
         this.controller = sSMLM;
-        this.imsFrame =ims;
+        imsFrame =ims;
         setupView();
         setupActionListerners();
         
@@ -63,19 +62,16 @@ public class ImportsSMLMPanel extends JPanel {
        
     private void setupView(){
       Dimension d = new Dimension (150,20);   
-     buttonLoadSpectra = new JButton("Load Spectra");
-     buttonLoadSpectra.setEnabled(true);
-    
-     buttonLoadSpectraData = new JButton("Load Spectroscopic Data");
+      buttonLoadSpectraData = new JButton("Load Spectroscopic Data");
     
      buttonLoadSpectraData.setEnabled(true);
-      csvLoaded=false;
+     csvLoaded=false;
      buttonLoadVisualization = new JButton("Visualize Data"); 
      buttonLoadVisualization.setPreferredSize(d);
      buttonLoadVisualization.setEnabled(true);  
      
      setBorder(BorderFactory.createTitledBorder("Load Saved sSMLM Data"));
-        GridBagLayout gbl = new GridBagLayout();
+     GridBagLayout gbl = new GridBagLayout();
       
         setLayout(gbl);
         
@@ -95,10 +91,8 @@ public class ImportsSMLMPanel extends JPanel {
         spLoadDataPanel.add(buttonLoadSpectraData);
         add(spLoadDataPanel,bc);
         
-       
         bc.gridy++;
       
-        
         sip = new SpatialImageParameterPanel(controller,false);
         add(sip,bc);
        
@@ -139,12 +133,8 @@ public class ImportsSMLMPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 try {
                     spData=new ArrayList<Blinking>();
-                   // IJ.log(textfieldLoadSpectraDataFilename.getText());
                     spData =controller.loadBlinkingSpectraData(textfieldLoadSpectraDataFilename.getText());
-                   if(spData!=null){
-                   // IJ.log("Size: "+spData.size());
-                }
-                    
+                  
                 } catch (IOException ex) {
                     Logger.getLogger(ImportsSMLMPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -155,14 +145,12 @@ public class ImportsSMLMPanel extends JPanel {
         
         buttonLoadVisualization.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                
+                controller.setImflg(true);
                 sip.setParams();
                 controller.setDefaults();
-                
                 controller.displayLoadedData(spData);
                 imsFrame.setVisible(false);
-              
-            }
+               }
         });
         
         buttonHelp.addActionListener(new ActionListener() {

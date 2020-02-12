@@ -442,8 +442,7 @@ public class VisbyClassPanel extends JPanel {
                     
                     String ch6_cw1_Val= ftfCh6.getText();
                     int ch6_cw1_Thres=Integer.parseInt(ch6_cw1_Val.replace(",",""));
-                    IJ.log("Centroid Window Thres: "+ch6_cw1_Thres);
-                    
+                                        
                     String ch6_cw2_Val= ftfCh6_2.getText();
                     int ch6_cw2_Thres=Integer.parseInt(ch6_cw2_Val.replace(",",""));
                     

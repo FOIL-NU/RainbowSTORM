@@ -68,24 +68,27 @@ public class SpatialImageParameterPanel extends JPanel {
     }
     
     private void setupView(){
-        
+        if(flg_crp){
         setBorder(BorderFactory.createTitledBorder("Camera Setup and Cropping Parameters"));
+        }else{
+        setBorder(BorderFactory.createTitledBorder("Camera Setup"));
+        }
         GridBagLayout gbl = new GridBagLayout();
-        gbl.columnWidths = new int[]{50, 200, 16};
-        
+              
         setLayout(gbl);
         
         GridBagConstraints c = new GridBagConstraints();
-           c.gridx = 0;
+        c.gridx = 0;
         c.gridy = 0;
-        c.weightx = 0.5;
-        c.insets = new Insets(0, 0, 0, 10);
         c.anchor = GridBagConstraints.LINE_END;
         
-        add(new JLabel("Camera Setup: "), c);
+        int ncols=4;
+        if(flg_crp){
+         add(new JLabel("Camera Setup: "), c);}
         c.gridy ++;
         add(new JLabel("Pixel Size [nm]: "), c);
         c.gridy ++;
+        
         add(new JLabel("Photoelectrons per A/D count : "), c);
         c.gridy ++;        
         add(new JLabel("Base level [A/D count]: "), c);
@@ -100,22 +103,22 @@ public class SpatialImageParameterPanel extends JPanel {
         int iDpxsize = 100;
         ftfPixSize = new JFormattedTextField();
         ftfPixSize.setValue(new Integer(iDpxsize));
-        ftfPixSize.setColumns(4);
+        ftfPixSize.setColumns(ncols);
      
         int iDbslv= 200;
         ftfBsLv = new JFormattedTextField();
         ftfBsLv.setValue(new Integer(iDbslv));
-        ftfBsLv.setColumns(4);
+        ftfBsLv.setColumns(ncols);
       
         double dDADU= 4.6;
         ftfADU = new JFormattedTextField();
         ftfADU.setValue(new Double (dDADU));
-        ftfADU.setColumns(4);
+        ftfADU.setColumns(ncols);
        
         int iDEmGain = 100;
         ftfEmGain= new JFormattedTextField();
         ftfEmGain.setValue(new Integer(iDEmGain ));
-        ftfEmGain.setColumns(4);
+        ftfEmGain.setColumns(ncols);
        
         add(ftfPixSize, c);
         c.gridy ++;
@@ -124,7 +127,8 @@ public class SpatialImageParameterPanel extends JPanel {
         add(ftfBsLv, c);
         c.gridy ++;
         add(ftfEmGain, c);
-      
+        
+        if(flg_crp){ 
         c.gridy=0;
         c.gridx ++;
         
@@ -138,32 +142,33 @@ public class SpatialImageParameterPanel extends JPanel {
         add(new JLabel("Width: "), c);
         c.gridy ++;
         add(new JLabel("Height: "), c);
-        
+     
         
         c.gridx ++; c.gridy = 1;
         c.weightx = 0;
         c.anchor = GridBagConstraints.LINE_START;
-        
+        }
         int iDxpos = 0;         
         ftfXPosition = new JFormattedTextField();
         ftfXPosition.setValue(new Integer(iDxpos));
-        ftfXPosition.setColumns(4);
+        ftfXPosition.setColumns(ncols);
        
         int iDypos = 0;  
         ftfYPosition = new JFormattedTextField();
         ftfYPosition.setValue(new Integer(iDypos));
-        ftfYPosition.setColumns(4);
+        ftfYPosition.setColumns(ncols);
       
         int iDwidth = 0;
         ftfWidth = new JFormattedTextField();
         ftfWidth.setValue(new Integer(iDwidth));
-        ftfWidth.setColumns(4);
+        ftfWidth.setColumns(ncols);
        
         int iDheight = 0;
         ftfHeight= new JFormattedTextField();
         ftfHeight.setValue(new Integer(iDheight));
-        ftfHeight.setColumns(4);
+        ftfHeight.setColumns(ncols);
         
+        if(flg_crp){ 
         add(ftfXPosition, c);
         c.gridy ++;
         add(ftfYPosition, c);
@@ -171,25 +176,26 @@ public class SpatialImageParameterPanel extends JPanel {
         add(ftfWidth, c);
         c.gridy ++;
         add(ftfHeight, c);
-    
-         Dimension d = new Dimension (150,20);
-        
+       
         c.gridx = 1; c.gridy ++;
         c.gridwidth = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
+        
+        }
+        
+      //  c.insets = new Insets(0, 0, 0, 0);
+        Dimension d = new Dimension (150,20);
         buttonCropImage = new JButton("Crop sSMLM Image");
         buttonCropImage.setPreferredSize(d);
         buttonCropImage.setEnabled(true);
          if(flg_crp){
         add(buttonCropImage, c);
          }
-            c.gridx = 0; c.gridy ++;
+        c.gridx = 0; c.gridy ++;
         c.gridwidth = 1;
-        c.fill = GridBagConstraints.HORIZONTAL;
-   
+        
         c.anchor = GridBagConstraints.CENTER;
      
-        
        add(new JLabel("Parameter File Path:"), c);
         
        c.gridx ++; 
@@ -269,7 +275,7 @@ public class SpatialImageParameterPanel extends JPanel {
                 
         });
          
-             controller.addPropertyChangeListener(new PropertyChangeListener() {
+            controller.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
                 if (e.getPropertyName().equals(Analysis.IMAGES_READY)) {
                     buttonSaveCropPositions.setEnabled(true);
@@ -346,10 +352,18 @@ public class SpatialImageParameterPanel extends JPanel {
                
                  boolean flg = isValidParams(xpos,ypos,wid,hght,pxsiz,bslv,(int) adu,emg);
                 if(flg){
+                    
+               if(flg_crp){     
                ftfXPosition.setValue(xpos);
                ftfYPosition.setValue(ypos);
                ftfWidth.setValue(wid);
                ftfHeight.setValue(hght);
+               }else{
+                    ftfXPosition.setValue(0);
+               ftfYPosition.setValue(0);
+               ftfWidth.setValue(0);
+               ftfHeight.setValue(0);
+               }
                               
                ftfPixSize.setValue(pxsiz);
                ftfBsLv.setValue(bslv);
@@ -437,14 +451,17 @@ public class SpatialImageParameterPanel extends JPanel {
                 int[] crpPos={xpos,ypos,wid,hgh};
                 
                 boolean flg = isValidParams(xpos,ypos,wid,hgh,pxSz,bsLv,adu,emG);
-               //if(flg){
+                controller.setCrppos(crpPos);
                 controller.setADU(adu);
                 controller.setPxSize((double)pxSz);
                 
                 controller.setbsLv(bsLv);
                 controller.setGain(emG);
-                controller.setCrppos(crpPos);
-              // }
+              /*  }else{
+                   IJ.error("Invalid Camera Parameters");
+               }*/
+                
+            
                 
               
           }catch(ParseException e1){

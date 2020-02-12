@@ -122,8 +122,7 @@ public class Analysis implements PlugIn {
     public final static String IMAGES_READY = "Zero and First Order Images Loaded";
     public final static String CALI_LOADED="Calibration File Loaded";
     public final static String PRE_CLOSED = "Preview Window Closed";
-    
-    PlugIn Test;
+
     JFrame mainFrame;
     JFrame newCSVFrame;
     JFrame newsSMLMCSVFrame;
@@ -138,8 +137,7 @@ public class Analysis implements PlugIn {
     ArrayList<Blinking> curBlinkings;
     ArrayList<Blinking> currentBEs;
     ArrayList<Blinking> oldBEs;
-   // ArrayList<Integer> oldIDs;
-    //ArrayList<Integer> curIDs;
+ 
     ImagePlus zeroOrderImage;
     ImagePlus firstOrderImage;
     ImagePlus firstOrderImage_bk;
@@ -161,6 +159,7 @@ public class Analysis implements PlugIn {
     private boolean driftLoaded;
     private boolean is3D;
     private boolean smlmImgLoaded;
+    private boolean imData;
     private double zeroth_Pos;
     private String csvFilePath;
     
@@ -394,29 +393,23 @@ public class Analysis implements PlugIn {
          //Evaluate Polynomial at Coefficients
         int[] xi =new int[waveRng.length] ;
         double[] x_new = new double[waveRng.length];
-        
-         XYSeries cvlinseries = new XYSeries("Fitted");
+        XYSeries cvlinseries = new XYSeries("Fitted");
            
         
         //Wavelength Range
         for(int n=0;n<waveRng.length;n++){
             double pt=waveRng[n];
             x_new[n]=cali.f(coeffs, pt);
-           
-            
             cvlinseries.add(x_new[n],pt);
-                  
-            
-        }
+             }
         
-         lineData = new XYSeriesCollection(); 
+        lineData = new XYSeriesCollection(); 
         lineData.addSeries(cvseries);
         lineData.addSeries(cvlinseries);
-        
-        
+                
         JFreeChart linePlot = this.createLineChart(lineData);
        
-         XYPlot lineCaliPlot = linePlot.getXYPlot();
+        XYPlot lineCaliPlot = linePlot.getXYPlot();
         lineCaliPlot.setBackgroundPaint(Color.lightGray);
         XYLineAndShapeRenderer renderer2 = new XYLineAndShapeRenderer();
         renderer2.setSeriesLinesVisible(0, false);
@@ -425,16 +418,14 @@ public class Analysis implements PlugIn {
         
         renderer2.setSeriesShape(0, cross);
         
-         renderer2.setSeriesPaint(0,Color.red);
+        renderer2.setSeriesPaint(0,Color.red);
         renderer2.setSeriesPaint(1,Color.black);
- 
-        
-         renderer2.setSeriesLinesVisible(1, true);
+       
+        renderer2.setSeriesLinesVisible(1, true);
         renderer2.setSeriesShapesVisible(1,false);
        
         lineCaliPlot.setRenderer(renderer2);
-        
-          
+       
         BigDecimal bd = new BigDecimal(r2).setScale(2, RoundingMode.HALF_UP); 
         double nr2 = bd.doubleValue();
         
@@ -443,9 +434,7 @@ public class Analysis implements PlugIn {
         
        String sch1="R-squared: "+Double.toString(nr2);
        String sch2=", RMSE:"+Double.toString(nrmse);
-        
-        TextTitle subText = new TextTitle(sch1+sch2);
-    
+       
         JPanel linePanel=new ChartPanel(linePlot);
         linePanel.setPreferredSize(new Dimension(500,250));
         lineFrame= new JFrame();
@@ -454,7 +443,6 @@ public class Analysis implements PlugIn {
         lineFrame.setIconImage(IJ.getInstance().getIconImage());
         lineFrame.pack();
         lineFrame.setVisible(true);
-        
        
     }
    
@@ -463,7 +451,6 @@ public class Analysis implements PlugIn {
       JFreeChart linePlot = ChartFactory.createXYLineChart("Pixels vs Wavelength ",
                 "Pixels",
                 "Wavelength (nm)",
-             
                 lineData,
                 PlotOrientation.VERTICAL,
                 true,
@@ -474,8 +461,8 @@ public class Analysis implements PlugIn {
         
         XYPlot caliLinePlot = linePlot.getXYPlot();
         caliLinePlot.setBackgroundPaint(Color.lightGray);   
-         NumberAxis rangeAxis = (NumberAxis) caliLinePlot.getRangeAxis();
-         NumberAxis domainAxis = (NumberAxis) caliLinePlot.getDomainAxis();
+        NumberAxis rangeAxis = (NumberAxis) caliLinePlot.getRangeAxis();
+        NumberAxis domainAxis = (NumberAxis) caliLinePlot.getDomainAxis();
      
         rangeAxis.setAutoRange(true);
         rangeAxis.setAutoRangeIncludesZero(false);
@@ -517,9 +504,7 @@ public class Analysis implements PlugIn {
             driftLoaded =false;
                 
             }
-     
-            
-     }   
+        }   
       
       
     
@@ -737,8 +722,7 @@ public class Analysis implements PlugIn {
                 mc.weightx=1;
                 mc.weighty=1;
                 vPanel= new VisualizationPanel(this,isImport,is3D,cens,phts,avg_sp,fy,spectra);
-               // mainVP.add(new VisualizationPanel(this,isImport,is3D,cens,phts,avg_sp,fy,spectra),mc);
-               mainVP.add(vPanel,mc);
+                mainVP.add(vPanel,mc);
                 pcSupport.firePropertyChange(Analysis.UPDATE_STATS, false, true);
                 mainVP.validate();
                 visFrame.setResizable(false);
@@ -754,48 +738,43 @@ public class Analysis implements PlugIn {
                         closeVisScreen();
                     }
                 });
-                
-              
-          
+         
     }
     
     public void closeVisScreen(){
         closeFlg= vPanel.getCloseAll();
+      
         if(closeFlg){
           
             String[] titles= WindowManager.getImageTitles();
             for(int vt=0;vt<titles.length;vt++){
-               
-                        if(titles[vt].contains("sSMLM")){  
-                       
+                    //  IJ.log(titles[vt]);
+                     if(titles[vt].contains("sSMLM")){  
                         IJ.selectWindow(titles[vt]);
                         IJ.run("Close");
-                        
                         }
-       
-            }
+                   }
             
           
-             String[] titles2= WindowManager.getNonImageTitles();
+           
+            String[] titles2= WindowManager.getNonImageTitles();
+       
             for(int yt=0;yt<titles2.length;yt++){
-              
-                        if(titles2[yt].contains("sSMLM")){    
+                       // IJ.log(titles2[yt]);
+                        if(titles2[yt].contains("sSMLM")){ 
+                            
                             if(titles2[yt].contains("Multi-Channel Plots")){
                             compPlot.dispose();
-                        }else{
-                           
+                            }else{
+                                                      
                         IJ.selectWindow(titles2[yt]);
-                       
                         IJ.run("Close");
-                            }
+                            
                         }
-       
+                }
             }
-            
-            
         }else{
-        
-        visFrame.dispose();
+           visFrame.dispose();
     }
         
     }
@@ -917,7 +896,7 @@ public class Analysis implements PlugIn {
       public int getMag(){
           
            int mag =0;
-            if(magnification<=0){  //int mag=1;
+            if(magnification<=0){  
                  try{
                   gui.VisSettingsPanel.ftfMag.commitEdit();
                    mag=((Number)gui.VisSettingsPanel.ftfMag.getValue()).intValue();
@@ -3760,7 +3739,8 @@ public class Analysis implements PlugIn {
          
           int wid=(int) ((xmax-xmin)/conv);
           int hei=(int) ((ymax-ymin)/conv);
-       
+         // r_Wid=wid;
+         // r_Hei=hei;
          
                  IJ.showStatus("Rendering Image...");
               
@@ -3768,8 +3748,7 @@ public class Analysis implements PlugIn {
                 
                   currentBEs=n_BEs;
                   oldBEs =n_BEs;
-                  r_Wid=wid;
-                  r_Hei=hei;
+               
               
                 
                 
@@ -5050,9 +5029,8 @@ public class Analysis implements PlugIn {
      }
   
        public void drawTCGaussianROI(ArrayList<Blinking> BEs, int mn_c,int mx_c, int wid, int hei,int xmin, int ymin, int mxunc) {
-        // make new imageprocessor
-         int mag=getMag();
-        
+       
+        int mag=getMag();
         int width=0;
         int height=0;
     
@@ -5186,6 +5164,13 @@ public class Analysis implements PlugIn {
         isROI=flg;
     }
     
+     public void setImflg(boolean flg){
+        imData=flg;
+    }
+    
+     public boolean getImflg(){
+        return imData;
+    }
     
     private void setupGUI() {
         try {
@@ -5217,6 +5202,7 @@ public class Analysis implements PlugIn {
        
         mainPanel.add(new BackgroundSubtractionPanel(this),gbc);
         imgsReady =false; 
+        imData = false;
         mainPanel.add(new SpectraExtractionPanel(this),gbc);
         smlmImgLoaded=false;
         

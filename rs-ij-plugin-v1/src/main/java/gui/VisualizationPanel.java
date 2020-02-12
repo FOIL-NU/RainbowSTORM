@@ -91,12 +91,8 @@ public class VisualizationPanel extends JPanel {
     private JButton buttonRunFRC;
     private JButton buttonShow3D;
     
-    
     private ArrayList<Blinking> cBEs;
     private int[] imVals;      
-    
-    
-    
     
     private ImageIcon sp_imc;
    
@@ -108,7 +104,6 @@ public class VisualizationPanel extends JPanel {
      private JTextField textfieldSaveSpectraFilename;
      private boolean dataImported;
      private boolean is3DData;
-     
      private JCheckBox checkboxCloseAll;
     
      
@@ -162,6 +157,7 @@ public class VisualizationPanel extends JPanel {
                
                 jspSpectra.setPreferredSize(new Dimension(sp_sz+50,300));
                 jspSpectra.createVerticalScrollBar();
+               
                 
                
                   cenPanel = new ChartPanel(cenChart);
@@ -184,20 +180,24 @@ public class VisualizationPanel extends JPanel {
                 imgPanel.setLayout(new FlowLayout());
               
                spectraPanel.setLayout(new BorderLayout());
-                spectraPanel.add(new JLabel("Spectral Images"),BorderLayout.NORTH);
+               spectraPanel.add(new JLabel("Spectral Images"),BorderLayout.NORTH);
                spectraPanel.add(jspSpectra, BorderLayout.CENTER);
                
-                           
-                 JLabel fy1= new JLabel("   "+wv1+"         "+wv2+"         "+wv3);
+             
+             int dif = (int) (round(((sp_sz-(wv1.length()+wv2.length()+wv3.length()))/2)/4)-1);
+                       
+             String spacer="";
+              for(int k=0;k<dif;k++){
+                  spacer=spacer+" ";
+              }
+            
+              JLabel fy1= new JLabel("    "+wv1+spacer+wv2+spacer+wv3);
               fy1.setHorizontalAlignment(JLabel.LEFT);
-              spectraPanel.add(fy1,BorderLayout.SOUTH);
-              
-                 JPanel lblPanel = new JPanel();
-                lblPanel.setLayout(new BorderLayout());
-                lblPanel.add(spectraPanel,BorderLayout.CENTER);
-                
-                
-               
+              spectraPanel.add(fy1,BorderLayout.SOUTH);            
+              JPanel lblPanel = new JPanel();
+              lblPanel.setLayout(new BorderLayout());
+              lblPanel.add(spectraPanel,BorderLayout.CENTER);
+             
               JLabel yaxis =new JLabel("Events");
               lblPanel.add(yaxis,BorderLayout.WEST);
           
@@ -355,8 +355,6 @@ public class VisualizationPanel extends JPanel {
                 JPanel closePanel=new JPanel();
                 closePanel.setLayout(new FlowLayout());
            
-                      
-                
                 closePanel.add(new JLabel("Close All RainbowSTORM Windows:"));
                 checkboxCloseAll = new JCheckBox();
                 checkboxCloseAll.setEnabled(true);
@@ -452,8 +450,6 @@ public class VisualizationPanel extends JPanel {
                     Logger.getLogger(LoadLocalizationsPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
                
-            
-                  
             }
         });
           
@@ -477,7 +473,8 @@ public class VisualizationPanel extends JPanel {
                     controller.resetVisData();
                     ArrayList<Blinking> n_BEs=controller.getCurrentData();
                     int[] fy= controller.getRange();
-                    controller.setROIflg(false);
+                    boolean flg = controller.getImflg();
+                    controller.setROIflg(flg);
                     updatePlots(n_BEs,fy);
             
              
