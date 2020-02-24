@@ -31,4 +31,4 @@ Install the RainbowSTORM plugin (Rainbow_STORM.jar)by copying the file into the 
 
 # How to Cite
 If you use RainbowSTORM for data analysis, please cite our paper:
-- J.L. Davis, B. Soetikno, B. Dong, K. Song, Y. Zhang, C. Sun and H.F. Zhang. RainbowSTORM: An open-source ImageJ plugin for spectroscopic single-molecule localization microscopy (sSMLM) data analysis and image reconstruction.
+- J.L. Davis, B. Soetikno, K. Song, Y. Zhang, C. Sun and H.F. Zhang. RainbowSTORM: An open-source ImageJ plugin for spectroscopic single-molecule localization microscopy (sSMLM) data analysis and image reconstruction.
