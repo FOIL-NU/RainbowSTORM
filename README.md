@@ -24,11 +24,11 @@ RainbowSTORM is an open-source, user-friendly ImageJ/Fiji plugin for end-to-end 
 # Getting Started
 RainbowSTORM requires: [ImageJ](https://imagej.nih.gov/ij/download.html) or [FIJI](https://imagej.net/Fiji/Downloads) and [ThunderSTORM](https://github.com/zitmen/thunderstorm/wiki/Downloads). For ImageJ installations the [Bioformats plugin](https://www.openmicroscopy.org/bio-formats/downloads/) is also needed to load the provided [test datasets](https://github.com/FOIL-NU/RainbowSTORM/tree/master/rs-ij-plugin-v1/RainbowSTORM%20Test)
 
-Locate the latest RainbowSTORM release in the [here](https://github.com/FOIL-NU/RainbowSTORM/tree/master/rs-ij-plugin-v1/Current%20Release). Test data is available [here](https://github.com/FOIL-NU/RainbowSTORM/tree/master/rs-ij-plugin-v1/RainbowSTORM%20Test).
+Locate the latest RainbowSTORM release in the [here](https://github.com/FOIL-NU/RainbowSTORM/tree/master/rs-ij-plugin-v1/Current%20Release). Test data is available [here](https://github.com/FOIL-NU/RainbowSTORM/tree/master/rs-ij-plugin-v1/RainbowSTORM%20Test) and on our [dropbox] (https://www.dropbox.com/sh/44uihyzrxh93jh8/AAAwjqpeNVz6fXnARH45s7wTa?dl=0).
 
 Install the RainbowSTORM plugin (Rainbow_STORM.jar)by copying the file into the Plugins subfolder of your ImageJ installation (e.g. “C:\Program Files\ImageJ\plugins”).  Verify the successful installation of RainbowSTORM by restarting ImageJ and locating RainbowSTORM under the Plugins menu.
 
 
 # How to Cite
 If you use RainbowSTORM for data analysis, please cite our paper:
-- J.L. Davis, B. Soetikno, K. Song, Y. Zhang, C. Sun and H.F. Zhang. RainbowSTORM: An open-source ImageJ plugin for spectroscopic single-molecule localization microscopy (sSMLM) data analysis and image reconstruction.
+- Davis, J. L., Soetikno, B., Song, K., Zhang, Y., Sun, C.; Zhang, H. F. RainbowSTORM: An open-source ImageJ plugin for spectroscopic single-molecule localization microscopy (sSMLM) data analysis and image reconstruction. bioRxiv 2020 [link](https://doi.org/10.1101/2020.03.10.986018)
