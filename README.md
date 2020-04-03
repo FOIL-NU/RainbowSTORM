@@ -1,9 +1,9 @@
 # RainbowSTORM
-RainbowSTORM: An open-source ImageJ plugin for spectroscopic single-molecule localization microscopy (sSMLM) data analysis and image reconstruction.
+RainbowSTORM: An open-source ImageJ plug-in for spectroscopic single-molecule localization microscopy (sSMLM) data analysis and image reconstruction.
 
 # About RainbowSTORM
 
-RainbowSTORM is an open-source, user-friendly ImageJ/Fiji plugin for end-to-end spectroscopic analysis and visualization of sSMLM data. RainbowSTORM provides a variety of spectroscopic processing and post-processing methods that allow users to calibrate, preview, and quantitatively analyze emission spectra acquired using a wide range of sSMLM systems and fluorescent molecules.
+RainbowSTORM is an open-source, user-friendly ImageJ/Fiji plug-in for end-to-end spectroscopic analysis and visualization of sSMLM data. RainbowSTORM provides a variety of spectroscopic processing and post-processing methods that allow users to calibrate, preview, and quantitatively analyze emission spectra acquired using a wide range of sSMLM systems and fluorescent molecules.
 
 # Features
 - **User-Friendly:** RainbowSTORM provides an easy to use framework and a variety of automatic processing options for spectroscopic analysis.
