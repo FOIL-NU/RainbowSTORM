@@ -68,6 +68,7 @@ import java.util.Arrays;
 
 import java.util.Collections;
 
+
 import javax.swing.UIManager;
 
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
@@ -528,6 +529,7 @@ public class Analysis implements PlugIn {
         String fName= im.getFileName();
         gui.LoadLocalizationsPanel.textfieldFilePath.setText(fName);
         if(data!=null&&!data.isEmpty()){
+       // csvFileLoaded = true;    
         String[] columnNames = data.get(0);
        
         for(int k=0;k<columnNames.length;k++){
@@ -743,7 +745,7 @@ public class Analysis implements PlugIn {
     
     public void closeVisScreen(){
         closeFlg= vPanel.getCloseAll();
-      
+       try{
         if(closeFlg){
           
             String[] titles= WindowManager.getImageTitles();
@@ -776,7 +778,9 @@ public class Analysis implements PlugIn {
         }else{
            visFrame.dispose();
     }
+       }catch(NullPointerException ex1){
         
+    }
     }
     
     
@@ -3788,7 +3792,7 @@ public class Analysis implements PlugIn {
           int counter=0;
         try{
         ImportCSV im= new ImportCSV();
-         csvFileLoaded = true;
+         //csvFileLoaded = true;
         
         ArrayList<String[]> data=im.importCSV(filename,this.currentImageDirectory, mainFrame);
               String fName= im.getFileName();
@@ -3797,7 +3801,8 @@ public class Analysis implements PlugIn {
          currentImageDirectory =  im.getDirName();
         
           if(data!=null&&!data.isEmpty()){
-        String[] columnNames = data.get(0);
+          csvFileLoaded = true;
+          String[] columnNames = data.get(0);
        
         for(int k=0;k<columnNames.length;k++){
             String cName= columnNames[k];
@@ -4381,10 +4386,12 @@ public class Analysis implements PlugIn {
     }
    
     public void displayCSVFile() {
+        
        
         if(csvFileLoaded)
-                      
+        
         this.setPixelSize();
+       
         this.drawBlinkingImage();
     }
     
@@ -4697,6 +4704,8 @@ public class Analysis implements PlugIn {
         ArrayList<Double> ypos= new ArrayList<Double>();
         ArrayList<Double> unc= new ArrayList<Double>();
         
+        try{
+        if(bEs!=null&&!bEs.isEmpty()){
          int sz=bEs.size();
      
            for( int i=0;i<sz;i++){
@@ -4789,6 +4798,10 @@ public class Analysis implements PlugIn {
         smlmImgLoaded=true;
           break;
         }
+        }
+           } catch (NullPointerException ex1) {
+                  
+                }  
         
     }
     

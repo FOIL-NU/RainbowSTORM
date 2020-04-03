@@ -335,7 +335,7 @@ public class SpatialImageParameterPanel extends JPanel {
                  crp_params= controller.loadCropPos(textfieldCropPositions.getText());
                 
                   if (crp_params==null||crp_params.isEmpty()){
-                     IJ.error("Incorrect File Loaded");
+                     //IJ.error("Incorrect File Loaded");
                       
                   }else{
                

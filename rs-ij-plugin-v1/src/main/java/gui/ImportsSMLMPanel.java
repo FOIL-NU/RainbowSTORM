@@ -21,8 +21,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import rstorm.Analysis;
-import ij.IJ;
-
 import java.awt.Dimension;
 import java.awt.Image;
 

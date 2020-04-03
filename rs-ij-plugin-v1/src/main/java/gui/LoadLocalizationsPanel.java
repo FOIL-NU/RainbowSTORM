@@ -113,8 +113,12 @@ public class LoadLocalizationsPanel extends JPanel {
                     Logger.getLogger(LoadLocalizationsPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
                
+              try{  
                 controller.displayCSVFile();
-                
+                  
+                } catch (NullPointerException ex1) {
+                   
+                }  
               
             }
         });
