@@ -26,7 +26,7 @@ RainbowSTORM requires: [ImageJ](https://imagej.nih.gov/ij/download.html) or [FIJ
 
 Locate the latest RainbowSTORM release in the [here](https://github.com/FOIL-NU/RainbowSTORM/tree/master/rs-ij-plugin-v1/Current%20Release).
 
-Install the RainbowSTORM plugin (Rainbow_STORM.jar)by copying the file into the Plugins subfolder of your ImageJ installation (e.g. “C:\Program Files\ImageJ\plugins”).  Verify the successful installation of RainbowSTORM by restarting ImageJ and locating RainbowSTORM under the Plugins menu.
+Install the RainbowSTORM plugin (Rainbow_STORM.jar) by copying the file into the Plugins subfolder of your ImageJ installation (e.g. “C:\Program Files\ImageJ\plugins”).  Verify the successful installation of RainbowSTORM by restarting ImageJ and locating RainbowSTORM under the Plugins menu.
 
 
 # How to Cite
