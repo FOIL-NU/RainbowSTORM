@@ -102,7 +102,7 @@ public class VisSettingsPanel extends JPanel {
             }
         });
             
-              ftfMag.addActionListener(new ActionListener() {
+            ftfMag.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                     

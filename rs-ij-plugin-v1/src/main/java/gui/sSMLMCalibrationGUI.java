@@ -6,6 +6,7 @@
 package gui;
 
 import ij.IJ;
+import java.awt.Color;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -101,6 +102,7 @@ public class sSMLMCalibrationGUI extends JPanel{
         ftfPk0.setValue(new Integer(iDPk0));
         ftfPk0.setColumns(4);
         ftfPk0.setEditable(true);
+        ftfPk0.setBackground(Color.GREEN);
         pkPanel.add(ftfPk0);
         
         pkPanel.add(new JLabel("Spectral Peak Positions:"));
@@ -438,32 +440,43 @@ public class sSMLMCalibrationGUI extends JPanel{
                 switch(flg){
                     case 1:
                         ftfPk0.setValue(new Integer(pk));
+                        ftfPk0.setBackground(Color.LIGHT_GRAY);
                         ftfPk0.setEditable(false);
                         ftfPk1.setEditable(true);
-                      
+                        ftfPk1.setBackground(Color.GREEN);
+                        
                         break;
                     case 2:
                         ftfPk1.setValue(new Integer(pk));
+                        ftfPk1.setBackground(Color.LIGHT_GRAY);
                         ftfPk1.setEditable(false);
                         ftfPk2.setEditable(true);
+                        ftfPk2.setBackground(Color.GREEN);
                         break;
                     case 3:
                         ftfPk2.setValue(new Integer(pk));
+                        ftfPk2.setBackground(Color.LIGHT_GRAY);
                         ftfPk2.setEditable(false);
                         ftfPk3.setEditable(true);
+                        ftfPk3.setBackground(Color.GREEN);
                          break;
                     case 4:
                         ftfPk3.setValue(new Integer(pk));
+                        ftfPk3.setBackground(Color.LIGHT_GRAY);
                         ftfPk3.setEditable(false);
                         ftfPk4.setEditable(true);
+                        ftfPk4.setBackground(Color.GREEN);
                          break;
                      case 5:
                         ftfPk4.setValue(new Integer(pk));
+                        ftfPk4.setBackground(Color.LIGHT_GRAY);
                         ftfPk4.setEditable(false);
                         ftfPk5.setEditable(true);
+                        ftfPk5.setBackground(Color.GREEN);
                          break;
                     case 6:
                         ftfPk5.setValue(new Integer(pk));
+                        ftfPk5.setBackground(Color.LIGHT_GRAY);
                         ftfPk5.setEditable(false);
                         buttonNext.setEnabled(false);
                         buttonBack.setEnabled(true);
@@ -501,34 +514,47 @@ public class sSMLMCalibrationGUI extends JPanel{
                     case 1:
                        
                         ftfPk0.setEditable(true);
+                        ftfPk0.setBackground(Color.GREEN);
                        
                         break;
                     case 2:
                        
                         ftfPk0.setEditable(true);
+                        ftfPk0.setBackground(Color.GREEN);
+                        ftfPk1.setBackground(Color.LIGHT_GRAY);
                         ftfPk1.setEditable(false);
-                         buttonBack.setEnabled(false);
+                        buttonBack.setEnabled(false);
                         break;
                     case 3:
                      
                         ftfPk1.setEditable(true);
+                        ftfPk1.setBackground(Color.GREEN);
+                        ftfPk2.setBackground(Color.LIGHT_GRAY);
                         ftfPk2.setEditable(false);
-                         break;
+                        break;
                     case 4:
                         ftfPk2.setEditable(true);
+                        ftfPk2.setBackground(Color.GREEN);
+                        ftfPk3.setBackground(Color.LIGHT_GRAY);
                         ftfPk3.setEditable(false);
                         break;
                      case 5:
                         ftfPk3.setEditable(true);
+                        ftfPk3.setBackground(Color.GREEN);
+                        ftfPk4.setBackground(Color.LIGHT_GRAY);
                         ftfPk4.setEditable(false);
+                       
                         break;
                       case 6:
                         ftfPk4.setEditable(true);
+                        ftfPk4.setBackground(Color.GREEN);
+                        ftfPk5.setBackground(Color.LIGHT_GRAY);
                         ftfPk5.setEditable(false);
                         buttonNext.setEnabled(false);
                         break;
                      default:
                          ftfPk5.setEditable(true);
+                         ftfPk5.setBackground(Color.GREEN);
                        
                 }
                              
@@ -561,32 +587,39 @@ public class sSMLMCalibrationGUI extends JPanel{
                 switch(flg){
                     case 1:
                         
+                        ftfPk0.setBackground(Color.LIGHT_GRAY);
                         ftfPk0.setEditable(false);
                         ftfPk1.setEditable(true);
+                        ftfPk1.setBackground(Color.GREEN);
                         break;
                     case 2:
-                      
+                        
+                        ftfPk1.setBackground(Color.LIGHT_GRAY); 
                         ftfPk1.setEditable(false);
                         ftfPk2.setEditable(true);
+                        ftfPk2.setBackground(Color.GREEN);
                         break;
                     case 3:
-                      
+                        ftfPk2.setBackground(Color.LIGHT_GRAY); 
                         ftfPk2.setEditable(false);
                         ftfPk3.setEditable(true);
+                        ftfPk3.setBackground(Color.GREEN);
                          break;
                            case 4:
-                       
+                        ftfPk3.setBackground(Color.LIGHT_GRAY);
                         ftfPk3.setEditable(false);
                         ftfPk4.setEditable(true);
+                        ftfPk4.setBackground(Color.GREEN);
                          break;
                            case 5:
-                       
+                        ftfPk4.setBackground(Color.LIGHT_GRAY);
                         ftfPk4.setEditable(false);
                         ftfPk5.setEditable(true);
+                        ftfPk5.setBackground(Color.GREEN);
                         buttonNext.setEnabled(false);
                          break;
                     case 6:
-                        
+                        ftfPk5.setBackground(Color.LIGHT_GRAY);
                         ftfPk5.setEditable(false);
                         break;
                      default:
@@ -612,27 +645,34 @@ public class sSMLMCalibrationGUI extends JPanel{
                int iDPk0 =0;
                ftfPk0.setValue(new Integer(iDPk0));
                ftfPk0.setEditable(true);
+               ftfPk0.setBackground(Color.GREEN);
 
                int iDPk1 =0;
                ftfPk1.setValue(new Integer(iDPk1));
+               ftfPk1.setBackground(Color.LIGHT_GRAY);
                ftfPk1.setEditable(false);
+             
 
                int iDPk2 =0;
                ftfPk2.setValue(new Integer(iDPk2));
+               ftfPk2.setBackground(Color.LIGHT_GRAY);
                ftfPk2.setEditable(false);
-
-
+               
 
                int iDPk3 =0;
                ftfPk3.setValue(new Integer(iDPk3));
+               ftfPk3.setBackground(Color.LIGHT_GRAY);
                ftfPk3.setEditable(false);
+               
 
-                int iDPk4 =0;
+               int iDPk4 =0;
                ftfPk4.setValue(new Integer(iDPk4));
+               ftfPk4.setBackground(Color.LIGHT_GRAY);
                ftfPk4.setEditable(false);
-
+              
                 int iDPk5 =0;
                ftfPk5.setValue(new Integer(iDPk5));
+               ftfPk5.setBackground(Color.LIGHT_GRAY);
                ftfPk5.setEditable(false);
 
                double dDSP =0.0;

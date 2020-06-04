@@ -31,7 +31,6 @@ public class LoadLocalizationsPanel extends JPanel {
     private Analysis controller;
     public static JTextField textfieldFilePath;
     private JButton buttonLoadCSV;
-   
     public static JTextField textfieldCaliFilePath;
     private JButton buttonLoadCali;
  

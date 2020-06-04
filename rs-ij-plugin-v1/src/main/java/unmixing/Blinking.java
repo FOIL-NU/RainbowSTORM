@@ -23,7 +23,8 @@ import javax.swing.SwingUtilities;
 
 /**
  *
- * @author Brian T. Soetikno
+ * @author Brian T. Soetikno 
+ * @author Janel L. Davis 
  */
 public class Blinking {
     private int frame;
@@ -217,6 +218,7 @@ public class Blinking {
                 cali.doFit(CurveFitter.POLY3);
                 break;
             default:
+                cali.doFit(CurveFitter.STRAIGHT_LINE);
                 IJ.error("Error: Invalid Fitting Parameter");
                 break;
         }
@@ -227,6 +229,7 @@ public class Blinking {
             x_new[n]=(cali.f(coeffs, pt)-px_shift);
           }
           
+          //For Prisms
           if(fitOrder==2||fitOrder==3){
               int ind1=0;
               int ind2=fy.length-1;
@@ -486,10 +489,14 @@ public class Blinking {
             case 1:
                 cali.doFit(CurveFitter.STRAIGHT_LINE);
                 break;
+            case 2:
+                cali.doFit(CurveFitter.POLY2);
+                break;
             case 3:
                 cali.doFit(CurveFitter.POLY3);
                 break;
             default:
+                cali.doFit(CurveFitter.STRAIGHT_LINE);
                 IJ.error("Error: Invalid Fitting Parameter");
                 break;
         }
@@ -579,10 +586,14 @@ public class Blinking {
             case 1:
                 cali.doFit(CurveFitter.STRAIGHT_LINE);
                 break;
+            case 2:
+                cali.doFit(CurveFitter.POLY2);
+                break;    
             case 3:
                 cali.doFit(CurveFitter.POLY3);
                 break;
             default:
+                cali.doFit(CurveFitter.STRAIGHT_LINE);
                 IJ.error("Error: Invalid Fitting Parameter");
                 break;
         }
@@ -675,10 +686,14 @@ public class Blinking {
             case 1:
                 cali.doFit(CurveFitter.STRAIGHT_LINE);
                 break;
+            case 2:
+                cali.doFit(CurveFitter.POLY2);
+                break;
             case 3:
                 cali.doFit(CurveFitter.POLY3);
                 break;
             default:
+                cali.doFit(CurveFitter.STRAIGHT_LINE);
                 IJ.error("Error: Invalid Fitting Parameter");
                 break;
         }

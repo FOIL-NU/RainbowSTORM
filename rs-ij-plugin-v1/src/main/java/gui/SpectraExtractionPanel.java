@@ -573,7 +573,7 @@ public class SpectraExtractionPanel extends JPanel {
     
         
     if(bsLv<0){
-         IJ.error("Camera base leve must be positive");
+         IJ.error("Camera base level must be positive");
         inv++;
     }
     

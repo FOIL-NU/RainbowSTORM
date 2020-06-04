@@ -86,7 +86,6 @@ public class sSMLM_3D {
               updateProgress(i,sz);
               Blinking bEvent= BEs.get(i);
               double centroid= bEvent.getCentroid();
-              
               double xpos=(bEvent.getXPosition()-xmin)+1;
               double ypos =(bEvent.getYPosition()-ymin)+1;
 

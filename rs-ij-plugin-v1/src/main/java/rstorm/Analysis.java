@@ -335,7 +335,7 @@ public class Analysis implements PlugIn {
        int lbnd=400;
        int ubnd=850;
        //set range for prism
-        if((fitOrder==1||fitOrder==2)){  
+        if((fitOrder==2||fitOrder==3)){  
        int mn_v=xData.indexOf(Collections.min(xData)); 
        int mx_v=xData.indexOf(Collections.max(xData));
        lbnd=(int)Math.round(xData.get(mn_v));
@@ -362,19 +362,19 @@ public class Analysis implements PlugIn {
         
          double[] xDs= ArrayUtils.toPrimitive(xData.toArray(new Double[v]));
         double[] yDs= ArrayUtils.toPrimitive(yData.toArray(new Double[v]));
-        
+        System.out.print(fitOrder);
          CurveFitter cali= new CurveFitter(xDs,yDs);
         int fitp=0;
             switch (fitOrder) {
-                case 0:
+                case 1:
                     cali.doFit(CurveFitter.STRAIGHT_LINE); //For Gratings
                     fitp=1;
                     break;
-                case 1:
+                case 2:
                     cali.doFit(CurveFitter.POLY2); //For Prisms
                     fitp=2;
                     break;
-                case 2:
+                case 3:
                     cali.doFit(CurveFitter.POLY3); //For Prisms
                     fitp=3;
                     break;
@@ -1079,8 +1079,7 @@ public class Analysis implements PlugIn {
         
         int tot =bEvents.size();
         
-        
-      
+          
         
         if(cID>=0&&cID<tot){
         Blinking nB =bEvents.get(cID);
@@ -1937,9 +1936,7 @@ public class Analysis implements PlugIn {
         cnt++;
      
             }
-          
-            
-            
+                    
         }
         
       
