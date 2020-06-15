@@ -4572,8 +4572,10 @@ public class Analysis implements PlugIn {
         org_X=roiXPosition;
         org_Y=roiYPosition;
         org_Wid=original.getWidth()-r2_Width;
-        
-       int offv = Integer.parseInt(gui.SpatialImageParameterPanel.ftfBsLv.getText());
+        try{
+       gui.SpatialImageParameterPanel.ftfBsLv.commitEdit();
+       int offv =((Number)gui.SpatialImageParameterPanel.ftfBsLv.getValue()).intValue();
+      
        float offset=(float) offv;
       
        FloatProcessor off_img = new FloatProcessor(roi2.width, roi2.height);
@@ -4606,6 +4608,9 @@ public class Analysis implements PlugIn {
         zeroth_Pos= roiYPosition;
         
         pcSupport.firePropertyChange(Analysis.IMAGES_READY, false, true);
+           }catch(ParseException e1){
+                     IJ.error("Invalid Input");
+                 }
         }else{
             if (!bflg1){
             IJ.error("Invalid Cropping Parameters: Cropping Parameters must be within the selected image");

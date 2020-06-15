@@ -232,6 +232,7 @@ public class Blinking {
           //For Prisms
           if(fitOrder==2||fitOrder==3){
               int ind1=0;
+              //int ind2=fy.length;
               int ind2=fy.length-1;
               disp=Math.abs((fy[ind2]-fy[ind1])/(x_new[ind2]-x_new[ind1]));
           }
@@ -610,6 +611,7 @@ public class Blinking {
         }
         
           int ind=(int) round(x_new[0]);
+       
           int mx=(int) round(x_new[x_new.length-1]);
          
           int dif =mx-ind;
@@ -710,7 +712,7 @@ public class Blinking {
        
           int ind=(int) round(x_new[0]);
         
-          int mx=(int) round(x_new[x_new.length-1]);
+           int mx=(int) round(x_new[x_new.length-1]);
          
           int dif= mx-ind;
           
@@ -952,7 +954,7 @@ public class Blinking {
     }
     
     public int[] setWavelengths(int rng1,int rng2, int stp){
-        int dif=Math.abs(rng2-rng1);
+        int dif=Math.abs(rng2-rng1)+1;
         int arWid = Math.round(dif/stp);
         
         int[] wvs = new int[arWid];

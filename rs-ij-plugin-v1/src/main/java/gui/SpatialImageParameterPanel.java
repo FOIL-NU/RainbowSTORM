@@ -229,16 +229,30 @@ public class SpatialImageParameterPanel extends JPanel {
                 ArrayList<Double> crp_prms = new ArrayList();
                 ArrayList<String> prmNames = new ArrayList();
                 
-                double xpos=Double.parseDouble(ftfXPosition.getText());
-                double ypos=Double.parseDouble(ftfYPosition.getText());
-                double wid=Double.parseDouble(ftfWidth.getText());
-                double hgh=Double.parseDouble(ftfHeight.getText());
-                   
-                double pxSz=Double.parseDouble(ftfPixSize.getText());
-                double bsLv=Double.parseDouble(ftfBsLv.getText());
-                double adu=Double.parseDouble(ftfADU.getText());
-                double emG=Double.parseDouble(ftfEmGain.getText());
+                 try{
+                               
+                 
+                ftfPixSize.commitEdit();
+                ftfEmGain.commitEdit();
+                ftfADU.commitEdit();
+                ftfBsLv.commitEdit();
                 
+                ftfXPosition.commitEdit();
+                ftfYPosition.commitEdit();
+                ftfWidth.commitEdit();
+                ftfHeight.commitEdit();
+                
+                 
+                 double pxSz=((Number)ftfPixSize.getValue()).doubleValue();
+                 double emG=((Number)ftfEmGain.getValue()).doubleValue();
+                 double adu= ((Number)ftfADU.getValue()).doubleValue();
+                 double bsLv= ((Number)ftfBsLv.getValue()).doubleValue();
+                 
+                 double xpos=((Number)ftfXPosition.getValue()).doubleValue();
+                 double ypos=((Number)ftfYPosition.getValue()).doubleValue();
+                 double wid=((Number)ftfWidth.getValue()).doubleValue();
+                 double hgh=((Number)ftfHeight.getValue()).doubleValue();
+                               
                 boolean flg = isValidParams(xpos,ypos,wid,hgh,pxSz,bsLv,adu,emG);
                 if(flg){
                 crp_prms.add(xpos);
@@ -271,6 +285,9 @@ public class SpatialImageParameterPanel extends JPanel {
                     IJ.error("Inputs must be real and non-ngative");
                 }
                
+                 }catch(ParseException e1){
+                     IJ.error("Invalid Input");
+                 }
             }
                 
         });
@@ -437,17 +454,24 @@ public class SpatialImageParameterPanel extends JPanel {
                 ftfEmGain.commitEdit();
                 ftfADU.commitEdit();
                 ftfBsLv.commitEdit();
+                
+                ftfXPosition.commitEdit();
+                ftfYPosition.commitEdit();
+                ftfWidth.commitEdit();
+                ftfHeight.commitEdit();
+                
                  
                  int pxSz=((Number)ftfPixSize.getValue()).intValue();
                  int emG=((Number)ftfEmGain.getValue()).intValue();
                  double adu= ((Number)ftfADU.getValue()).doubleValue();
-                 int bsLv=((Number)ftfBsLv.getValue()).intValue();
+                 int bsLv= ((Number)ftfBsLv.getValue()).intValue();
+                 
+                 int xpos=((Number)ftfXPosition.getValue()).intValue();
+                int ypos=((Number)ftfYPosition.getValue()).intValue();
+                int wid=((Number)ftfWidth.getValue()).intValue();
+                int hgh=((Number)ftfHeight.getValue()).intValue();
           
-                int xpos=Integer.parseInt(ftfXPosition.getText());
-                int ypos=Integer.parseInt(ftfYPosition.getText());
-                int wid=Integer.parseInt(ftfWidth.getText());
-                int hgh=Integer.parseInt(ftfHeight.getText());
-               
+                          
                 int[] crpPos={xpos,ypos,wid,hgh};
                 
                 boolean flg = isValidParams(xpos,ypos,wid,hgh,pxSz,bsLv,adu,emG);

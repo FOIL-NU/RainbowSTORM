@@ -584,8 +584,8 @@ public class SpectraExtractionPanel extends JPanel {
     }
     
     
-    if(yComp<-5||yComp>5){
-        IJ.error("Y-Compensation must range from -5 to 5");
+    if(yComp<-8||yComp>8){
+        IJ.error("Y-Compensation must range from -8 to 8");
         inv++;
         
     }
