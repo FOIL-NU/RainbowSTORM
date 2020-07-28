@@ -333,6 +333,9 @@ public class SpectraExtractionPanel extends JPanel {
                   }catch(ParseException e1){
                      IJ.error("Invalid Input");
                  }
+                  catch (OutOfMemoryError ex) {
+                     IJ.error("Please increase your ImageJ Heap: Edit -> Options -> Memory & Threads -> Increase maximum memory");
+                 }
             
        }
                 };
@@ -403,6 +406,10 @@ public class SpectraExtractionPanel extends JPanel {
                   }catch(ParseException e1){
                      IJ.error("Invalid Input");
                  }
+                  catch (OutOfMemoryError ex) {
+                     IJ.error("Please increase your ImageJ Heap: Edit -> Options -> Memory & Threads -> Increase maximum memory");
+                 }
+            
             }
               
         });

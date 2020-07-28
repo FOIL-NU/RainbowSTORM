@@ -6,6 +6,7 @@
 package gui;
 
 
+import ij.IJ;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -111,6 +112,9 @@ public class LoadLocalizationsPanel extends JPanel {
                 } catch (IOException ex) {
                     Logger.getLogger(LoadLocalizationsPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                  catch (OutOfMemoryError ex_mem) {
+                     IJ.error("Please increase your ImageJ Heap: Edit -> Options -> Memory & Threads -> Increase maximum memory");
+                 }
                
               try{  
                 controller.displayCSVFile();
@@ -138,6 +142,10 @@ public class LoadLocalizationsPanel extends JPanel {
               } catch (IOException ex) {
                     Logger.getLogger(LoadLocalizationsPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                
+                 catch (OutOfMemoryError ex_mem2) {
+                     IJ.error("Please increase your ImageJ Heap: Edit -> Options -> Memory & Threads -> Increase maximum memory");
+                 }
                
             }
         });

@@ -110,14 +110,26 @@ public class BackgroundSubtractionPanel extends JPanel {
                 if(ftfAvgBk.isEditable()){
             double avg_bk=((Number)ftfAvgBk.getValue()).doubleValue();
             if(isValid(avg_bk)){
-            controller.applyGlobalBkSub(avg_bk);
+                try{
+                    
+                   controller.applyGlobalBkSub(avg_bk);
+                }
+                 catch (OutOfMemoryError ex) {
+                     IJ.error("Please increase your ImageJ Heap: Edit -> Options -> Memory & Threads -> Increase maximum memory");
+                 }
             }
                 }else{
                     IJ.error("Background Subtraction Error");
                 }
             }else{
+                try{
                 double thres=-1;
                 controller.applyGlobalBkSub(thres);
+                }
+                 catch (OutOfMemoryError ex) {
+                     IJ.error("Please increase your ImageJ Heap: Edit -> Options -> Memory & Threads -> Increase maximum memory");
+                 }
+            
             }
                 
             

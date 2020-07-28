@@ -203,11 +203,13 @@ public class Blinking {
          double conv=pixelSize+0.5;
     
          int x_ind=Math.abs(org_x);
-         CurveFitter cali= new CurveFitter(xData,yData);
-        switch (fitOrder) {
-            /*case 0:
-                IJ.error("Error: Invalid Fitting Parameter");
-                break;*/
+         
+          CurveFitter cali = doCalibration(xData,yData,fitOrder);
+       /*  CurveFitter cali= new CurveFitter(xData,yData);
+       // switch (fitOrder) {
+         //   /*case 0:
+           //     IJ.error("Error: Invalid Fitting Parameter");
+             //   break;
             case 1:
                 cali.doFit(CurveFitter.STRAIGHT_LINE);
                 break;
@@ -221,7 +223,7 @@ public class Blinking {
                 cali.doFit(CurveFitter.STRAIGHT_LINE);
                 IJ.error("Error: Invalid Fitting Parameter");
                 break;
-        }
+        }*/
         double[] coeffs= cali.getParams();
         double[] x_new = new double[fy.length];
           for(int n=0;n<fy.length;n++){
@@ -484,8 +486,9 @@ public class Blinking {
         int[] fy=setWavelengths(rng1,rng2,stp);
        
          int x_ind=Math.abs(org_x);
-                 
-        CurveFitter cali= new CurveFitter(xD,yD);
+        
+          CurveFitter cali = doCalibration(xD,yD,fitOrder);
+        /*CurveFitter cali= new CurveFitter(xD,yD);
           switch (fitOrder) {
             case 1:
                 cali.doFit(CurveFitter.STRAIGHT_LINE);
@@ -500,7 +503,7 @@ public class Blinking {
                 cali.doFit(CurveFitter.STRAIGHT_LINE);
                 IJ.error("Error: Invalid Fitting Parameter");
                 break;
-        }
+        }*/
         double[] coeffs= cali.getParams();
       
         double[] x_new = new double[fy.length];
@@ -581,8 +584,9 @@ public class Blinking {
         int r =(2*bw)+1;
       
         int[] fy=setWavelengths(rng1,rng2,stp);
+        CurveFitter cali = doCalibration(xData,yData,fitOrder);
        
-        CurveFitter cali= new CurveFitter(xData,yData);
+      /*  CurveFitter cali= new CurveFitter(xData,yData);
            switch (fitOrder) {
             case 1:
                 cali.doFit(CurveFitter.STRAIGHT_LINE);
@@ -597,7 +601,7 @@ public class Blinking {
                 cali.doFit(CurveFitter.STRAIGHT_LINE);
                 IJ.error("Error: Invalid Fitting Parameter");
                 break;
-        }
+        }*/
         double[] coeffs= cali.getParams();
       
         double[] x_new = new double[fy.length];
@@ -683,7 +687,9 @@ public class Blinking {
          int x_ind=Math.abs(org_x);
          int y_ind=Math.abs(org_y);
          
-        CurveFitter cali= new CurveFitter(xData,yData);
+         CurveFitter cali = doCalibration(xData,yData,fitOrder);
+         
+        /*CurveFitter cali= new CurveFitter(xData,yData);
            switch (fitOrder) {
             case 1:
                 cali.doFit(CurveFitter.STRAIGHT_LINE);
@@ -698,7 +704,7 @@ public class Blinking {
                 cali.doFit(CurveFitter.STRAIGHT_LINE);
                 IJ.error("Error: Invalid Fitting Parameter");
                 break;
-        }
+        }*/
         double[] coeffs= cali.getParams();
       
         double[] x_new = new double[fy.length];
@@ -972,6 +978,26 @@ public class Blinking {
         
         return wvs;
         
+    }
+    
+    private CurveFitter doCalibration(double[] xData, double[] yData, int fitOrder){
+           CurveFitter cali= new CurveFitter(xData,yData);
+           switch (fitOrder) {
+            case 1:
+                cali.doFit(CurveFitter.STRAIGHT_LINE);
+                break;
+            case 2:
+                cali.doFit(CurveFitter.POLY2);
+                break;
+            case 3:
+                cali.doFit(CurveFitter.POLY3);
+                break;
+            default:
+                cali.doFit(CurveFitter.STRAIGHT_LINE);
+                IJ.error("Error: Invalid Fitting Parameter");
+                break;
+        }
+        return cali;
     }
     
     private float[] interpLinear(double[] x, double[] y, double[] xi) throws IllegalArgumentException {
