@@ -144,18 +144,18 @@ public class sSMLMCalibrationGUI extends JPanel{
        
         buttonSet= new JButton("Set");
         buttonSet.setEnabled(true);
-        buttonSet.setPreferredSize(new Dimension(100,30));
+        //buttonSet.setPreferredSize(new Dimension(100,30));
         pkPanel.add(buttonSet);
        
        
         buttonBack= new JButton("Previous");
         buttonBack.setEnabled(false);
-        buttonBack.setPreferredSize(new Dimension(100,30));
+        //buttonBack.setPreferredSize(new Dimension(100,30));
         pkPanel.add(buttonBack);
         
         buttonNext= new JButton("Next");
         buttonNext.setEnabled(false);
-        buttonNext.setPreferredSize(new Dimension(100,30));
+        //buttonNext.setPreferredSize(new Dimension(100,30));
         pkPanel.add(buttonNext);
           
         add(pkPanel,bc);
@@ -237,20 +237,21 @@ public class sSMLMCalibrationGUI extends JPanel{
         
         buttonCalibrate= new JButton("Calibrate");
         buttonCalibrate.setEnabled(true);
-        buttonCalibrate.setPreferredSize(new Dimension(100,30));
+        //buttonCalibrate.setPreferredSize(new Dimension(100,30));
        
         caliPanel.add(buttonCalibrate);
         
         buttonSave= new JButton("Save");
         buttonSave.setEnabled(false);
-        buttonSave.setPreferredSize(new Dimension(100,30));
+       // buttonSave.setPreferredSize(new Dimension(100,30));
         caliPanel.add(buttonSave);
         
         buttonReset= new JButton("Reset");
         buttonReset.setEnabled(true);
-        buttonReset.setPreferredSize(new Dimension(100,30));
+       //buttonReset.setPreferredSize(new Dimension(100,30));
         caliPanel.add(buttonReset);
         add(caliPanel, bc);
+        bc.gridx++;
         
         JPanel helpPanel = new JPanel();
         helpPanel.setLayout(new FlowLayout());
@@ -266,8 +267,12 @@ public class sSMLMCalibrationGUI extends JPanel{
        
         buttonHelp =new JButton(img_icon);
         buttonHelp.setEnabled(true);
-        buttonHelp.setPreferredSize(new Dimension (20,20));
-        helpPanel.add(buttonHelp);
+        buttonHelp.setBorderPainted(false);
+        //buttonHelp.setBackground(Color.lightGray);
+        //buttonHelp.setForeground(Color.lightGray);
+       //buttonHelp.setPreferredSize(new Dimension (20,20));
+       //buttonHelp.setSize(new Dimension(20,20));
+       helpPanel.add(buttonHelp);
         bc.anchor=GridBagConstraints.LAST_LINE_END;
         
        add(helpPanel, bc);

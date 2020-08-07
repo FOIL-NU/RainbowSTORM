@@ -31,7 +31,10 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.Shape;
+import java.awt.Toolkit;
 import static java.lang.Math.round;
 import org.jfree.chart.ChartFactory;
 import javax.swing.JLabel;
@@ -78,6 +81,7 @@ public class Calibration implements PlugIn{
     JLabel resOutput2;
     JPanel resPanel2;
      JPanel mancaliPanel;
+     JPanel PlotPanel;
     ChartPanel chartPanel;
     ChartPanel caliPanel;
     ChartPanel linePanel;
@@ -233,12 +237,15 @@ public class Calibration implements PlugIn{
        
       private void updatePlot() {
         
-        mainFrame = new JFrame("RainbowSTORM: sSMLM Calibration");
-        mainFrame.setIconImage(IJ.getInstance().getIconImage());
-         mainFrame.setResizable(false);
-        mainPanel = new JPanel();
-        mainPanel.setLayout(new GridBagLayout());
-                    
+       mainFrame = new JFrame("RainbowSTORM: sSMLM Calibration");
+       mainFrame.setIconImage(IJ.getInstance().getIconImage());
+       mainFrame.setResizable(false);
+       mainPanel = new JPanel();
+      
+       mainPanel.setLayout(new GridBagLayout());
+       
+       PlotPanel= new JPanel();
+       PlotPanel.setLayout(new GridLayout(1,3));
         XYDataset orgDt = this.plotData(colSum);
         orgDataPlot = ChartFactory.createXYLineChart("Uncalibrated Spectrum",
                 "Pixels",
@@ -263,39 +270,67 @@ public class Calibration implements PlugIn{
         rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
         chartPanel=new ChartPanel(orgDataPlot);
         chartPanel.setDomainZoomable(true);
-        chartPanel.setPreferredSize(new Dimension(500,270));
+        Dimension dm = Toolkit.getDefaultToolkit().getScreenSize();
+        double dm_wid = dm.getWidth();
+               
+        int dim1 = 500;
+        int dim2 = 270;
+        if(dm_wid<1600){
+            dim1=300;
+            dim2=200;
+        }
+        
+       if(dm_wid<900){
+            dim1=200;
+            dim2=200;
+        }
+     
+        
+        chartPanel.setPreferredSize(new Dimension(dim1,dim2));
         gbc= new GridBagConstraints();
         
         gbc.gridx = 0;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.gridy = 0;
+       gbc.fill = GridBagConstraints.CENTER;
+       gbc.gridy = 0;
+       
         
-        mainPanel.add(chartPanel,gbc);
-        mainPanel.validate();
+        //mainPanel.add(chartPanel,gbc);
+        PlotPanel.add(chartPanel);
+        PlotPanel.validate();
+       // mainPanel.validate();
       
         caliData = new XYSeriesCollection();
         JFreeChart caliPlot=this.createCaliChart();  
     
         caliPanel=new ChartPanel(caliPlot);
-        caliPanel.setPreferredSize(new Dimension(500,270));
+        caliPanel.setPreferredSize(new Dimension(dim1,dim2));
         
-        gbc.gridx = gbc.gridx+chartPanel.getHeight()+20;
-        gbc.fill = GridBagConstraints.BOTH;
-              
-        mainPanel.add(caliPanel,gbc);
+        //gbc.gridx = gbc.gridx+chartPanel.getHeight()+20;
+        //gbc.fill = GridBagConstraints.BOTH;
+        //mainPanel.add(caliPanel,gbc);
+        PlotPanel.add(caliPanel);
+        PlotPanel.validate();
+       
         lineData = new XYSeriesCollection();
         JFreeChart linePlot=this.createLineChart();
    
         linePanel=new ChartPanel(linePlot);
-        linePanel.setPreferredSize(new Dimension(500,270));
+       linePanel.setPreferredSize(new Dimension(dim1,dim2));
                
-        gbc.gridx = gbc.gridx+chartPanel.getWidth()+caliPanel.getWidth()+20;
+        //gbc.gridx = gbc.gridx+chartPanel.getWidth()+caliPanel.getWidth()+20;
       
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.gridwidth= chartPanel.getWidth()+caliPanel.getWidth()+linePanel.getWidth()+20;
+        //gbc.fill = GridBagConstraints.BOTH;
+        //gbc.gridwidth= chartPanel.getWidth()+caliPanel.getWidth()+linePanel.getWidth()+20;
+        //mainPanel.add(linePanel,gbc);
+        PlotPanel.add(linePanel);
+        //mainPanel.validate();
+        PlotPanel.validate();
         
-        mainPanel.add(linePanel,gbc);
+       
+        mainPanel.add(PlotPanel,gbc);
         mainPanel.validate();
+        gbc.gridx = 0;
+        gbc.gridy++;
         
         GridBagConstraints rbc =new GridBagConstraints();
         resPanel= new JPanel();
@@ -326,22 +361,25 @@ public class Calibration implements PlugIn{
         resPanel.add(resOutput,rbc);
         resPanel.validate();
         
-        gbc.gridx = 0;
-        gbc.gridy=gbc.gridy+chartPanel.getHeight()+caliPanel.getHeight()+20;
-        gbc.gridwidth=480;
+        //gbc.gridx = 0;
+        //gbc.gridy++;
+       // gbc.gridy=gbc.gridy+chartPanel.getHeight()+caliPanel.getHeight()+20;
+        //gbc.gridwidth=480;
+       // mainPanel.add(resPanel,gbc);
         mainPanel.add(resPanel,gbc);
         mainPanel.validate();
        
         gbc.gridx = 0;
-        gbc.gridy=gbc.gridy+chartPanel.getHeight()+caliPanel.getHeight()+resPanel.getHeight()+20;
-      
-        gbc.gridwidth=480;
-       
+        gbc.gridy++;
+        //gbc.gridy=gbc.gridy+chartPanel.getHeight()+caliPanel.getHeight()+resPanel.getHeight()+20;
+        //gbc.gridwidth=480;
+        //mainPanel.add(new sSMLMCalibrationGUI(this),gbc);  
         mainPanel.add(new sSMLMCalibrationGUI(this),gbc);  
         mainPanel.validate();
      
                 
         mainFrame.getContentPane().add(mainPanel);
+        //mainFrame.sets
         mainFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         mainFrame.pack();
         mainFrame.setVisible(true);

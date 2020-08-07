@@ -414,7 +414,7 @@ public class sSMLMPseudoColoredRendering {
 		String stmid = "" + (max + min)/2 + " nm";
 		TextRoi roiup = new TextRoi(ipwid/2, 2, stup, font); 
 		TextRoi roimid = new TextRoi(ipwid/2,(iph/2)+5, stmid, font);
-		TextRoi roilow = new TextRoi(ipwid/2, iph, stmin, font);
+		TextRoi roilow = new TextRoi(ipwid/2, iph-10, stmin, font);
                
 		roiup.setStrokeColor(Color.black);
 		roimid.setStrokeColor(Color.black);
