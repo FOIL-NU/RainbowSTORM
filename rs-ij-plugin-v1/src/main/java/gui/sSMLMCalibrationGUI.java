@@ -268,11 +268,9 @@ public class sSMLMCalibrationGUI extends JPanel{
         buttonHelp =new JButton(img_icon);
         buttonHelp.setEnabled(true);
         buttonHelp.setBorderPainted(false);
-        //buttonHelp.setBackground(Color.lightGray);
-        //buttonHelp.setForeground(Color.lightGray);
-       //buttonHelp.setPreferredSize(new Dimension (20,20));
-       //buttonHelp.setSize(new Dimension(20,20));
-       helpPanel.add(buttonHelp);
+        buttonHelp.setPreferredSize(new Dimension (20,20));
+              
+        helpPanel.add(buttonHelp);
         bc.anchor=GridBagConstraints.LAST_LINE_END;
         
        add(helpPanel, bc);
