@@ -294,10 +294,9 @@ public class Calibration implements PlugIn{
        gbc.gridy = 0;
        
         
-        //mainPanel.add(chartPanel,gbc);
         PlotPanel.add(chartPanel);
         PlotPanel.validate();
-       // mainPanel.validate();
+       
       
         caliData = new XYSeriesCollection();
         JFreeChart caliPlot=this.createCaliChart();  
@@ -305,9 +304,6 @@ public class Calibration implements PlugIn{
         caliPanel=new ChartPanel(caliPlot);
         caliPanel.setPreferredSize(new Dimension(dim1,dim2));
         
-        //gbc.gridx = gbc.gridx+chartPanel.getHeight()+20;
-        //gbc.fill = GridBagConstraints.BOTH;
-        //mainPanel.add(caliPanel,gbc);
         PlotPanel.add(caliPanel);
         PlotPanel.validate();
        
@@ -316,14 +312,8 @@ public class Calibration implements PlugIn{
    
         linePanel=new ChartPanel(linePlot);
        linePanel.setPreferredSize(new Dimension(dim1,dim2));
-               
-        //gbc.gridx = gbc.gridx+chartPanel.getWidth()+caliPanel.getWidth()+20;
       
-        //gbc.fill = GridBagConstraints.BOTH;
-        //gbc.gridwidth= chartPanel.getWidth()+caliPanel.getWidth()+linePanel.getWidth()+20;
-        //mainPanel.add(linePanel,gbc);
         PlotPanel.add(linePanel);
-        //mainPanel.validate();
         PlotPanel.validate();
         
        
@@ -360,26 +350,19 @@ public class Calibration implements PlugIn{
         resOutput = new JLabel("    ");
         resPanel.add(resOutput,rbc);
         resPanel.validate();
-        
-        //gbc.gridx = 0;
-        //gbc.gridy++;
-       // gbc.gridy=gbc.gridy+chartPanel.getHeight()+caliPanel.getHeight()+20;
-        //gbc.gridwidth=480;
-       // mainPanel.add(resPanel,gbc);
+    
         mainPanel.add(resPanel,gbc);
         mainPanel.validate();
        
         gbc.gridx = 0;
         gbc.gridy++;
-        //gbc.gridy=gbc.gridy+chartPanel.getHeight()+caliPanel.getHeight()+resPanel.getHeight()+20;
-        //gbc.gridwidth=480;
-        //mainPanel.add(new sSMLMCalibrationGUI(this),gbc);  
+       
         mainPanel.add(new sSMLMCalibrationGUI(this),gbc);  
         mainPanel.validate();
      
                 
         mainFrame.getContentPane().add(mainPanel);
-        //mainFrame.sets
+      
         mainFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         mainFrame.pack();
         mainFrame.setVisible(true);
