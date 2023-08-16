@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+		http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>14.0.0</version>
+		<relativePath />
+	</parent>
+
+	<groupId>de.mpicbg.scf</groupId>
+	<artifactId>ij2course-images</artifactId>
+	<version>0.1.0</version>
+
+	<name>ij2course_solution</name>
+
+	<description>
+		ij2course_solution
+	</description>
+
+	<url>https://www.mpi-cbg.de/services-facilities/core-facilities/scientific-computing-facility/services/</url>
+	<inceptionYear>2017</inceptionYear>
+	<organization>
+		<name>MPI CBG</name>
+		<url>https://www.mpi-cbg.de/services-facilities/core-facilities/scientific-computing-facility/services/</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>BSD License Version 3</name>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<dependencies>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>5.5.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>TrackMate_</artifactId>
+			<version>3.5.1</version>
+		</dependency>
+
+    <!-- Other dependencies... -->
+		<dependency>
+			<groupId>ome</groupId>
+			<artifactId>bioformats_package</artifactId>
+			<version>6.11.0</version>
+		</dependency>
+
+		<dependency>
+        	<groupId>org.apache.commons</groupId>
+        	<artifactId>commons-math3</artifactId>
+        <version>3.6.1</version> <!-- Replace with the latest version available -->
+    	</dependency>
+
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-algorithm</artifactId>
+		</dependency>
+	</dependencies>
+
+
+	<developers>
+		<!-- See https://imagej.net/Team -->
+		<developer>
+			<id>haesleinhuepf</id>
+			<name>Robert Haase</name>
+			<email>rhaase@mpi-cbg.de</email>
+			<organization>Scientific Computing Facility, MPI CBG Dresden</organization>
+			<url>https://github.com/haesleinhuepf</url>
+			<roles>
+				<role>founder</role>
+				<role>lead</role>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+			</roles>
+		</developer>
+	</developers>
+
+	<contributors>
+		<contributor><name>none</name></contributor>
+	</contributors>
+
+
+	<mailingLists>
+		<mailingList>
+			<name>Robert Haase</name>
+			<archive>rhaase@mpi-cbg.de</archive>
+		</mailingList>
+	</mailingLists>
+
+
+	<properties>
+		<package-name>de.mpibcbg.scf.rhaase</package-name>
+		<license.licenseName>bsd_3</license.licenseName>
+		<license.copyrightOwners>Max Planck Institute of Molecular Cell Biology and Genetics, Dresden</license.copyrightOwners>
+		<imagej.app.directory>/Applications/Haase/Fiji_current.app</imagej.app.directory>
+	</properties>
+
+
+	<scm>
+		<connection>scm:git:git://git.mpi-cbg.de/rhaase/playground</connection>
+		<developerConnection>scm:git:git@git.mpi-cbg.de/rhaase/playground</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://git.mpi-cbg.de/rhaase/playground</url>
+	</scm>
+	<issueManagement>
+		<system>Gitlab Issues</system>
+		<url>https://git.mpi-cbg.de/rhaase/playground/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>None</system>
+	</ciManagement>
+
+	<repositories>
+		<repository>
+			<id>imagej.public</id>
+			<url>http://maven.imagej.net/content/groups/public</url>
+		</repository>
+	</repositories>
+
+	
+	<build>
+		<plugins>
+		    <plugin>
+		      <groupId>org.apache.maven.plugins</groupId>
+		      <artifactId>maven-javadoc-plugin</artifactId>
+		      <executions>
+		        <execution>
+		          <id>attach-javadocs</id>
+		          <goals>
+		            <goal>jar</goal>
+		          </goals>
+		        </execution>
+		      </executions>
+		    </plugin>
+		</plugins>
+	</build>
+
+	
+</project>
