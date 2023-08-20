@@ -1,6 +1,20 @@
-package de.mpicbg.scf.rhaase.fiji.ij2course.images;
+package images;
 
 import java.io.IOException;
+
+import javax.swing.JFrame;
+
+import org.apache.commons.math3.fitting.WeightedObservedPoints;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.apache.commons.math3.analysis.ParametricUnivariateFunction;
+
+
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -20,6 +34,10 @@ import loci.common.services.ServiceException;
 import loci.common.services.ServiceFactory;
 import ij.measure.ResultsTable;
 import loci.plugins.BF;
+import org.apache.commons.math3.fitting.GaussianCurveFitter;
+import org.apache.commons.math3.fitting.PolynomialCurveFitter;
+import org.apache.commons.math3.fitting.SimpleCurveFitter;
+import org.apache.commons.math3.fitting.WeightedObservedPoints;
 
 import loci.formats.FormatException;
 import loci.formats.FormatReader;
@@ -83,9 +101,16 @@ public class ImagesMain {
             IJ.log("File selection canceled.");
             return;
         }
+        String[] splitted = fileName.split("_");
+        String zeroth_order_filePath = directory + splitted[0] +'_'+ splitted[1]+"_zeroth.tif";
+        String first_order_filePath = directory + splitted[0] +'_'+ splitted[1]+"_first.tif";
 
+        ImageProcessing.localization(zeroth_order_filePath,first_order_filePath);
+
+        
+        //AxialCalibration.calibrate(filePath);
+        /*
         // Combine the directory and filename to get the full path
-        String filePath = directory + fileName;
 
         // Use Bio-Formats to open the ND2 file
         //Opener opener = new Opener();
@@ -93,10 +118,78 @@ public class ImagesMain {
 
         // Read the ND2 file using Bio-Formats
         //ImagePlus imagePlus = readND2(filePath);
+        String[] nd2files = new String[5];
+        nd2files[0] = "532_nm.nd2";
+        nd2files[1] = "605_nm.nd2";
+        nd2files[2] = "635_nm.nd2";
+        nd2files[3] = "685_nm.nd2";
+        nd2files[4] = "750_nm.nd2";
+        float[][] Result = new float[5][2];
+        double[] Distance = new double[5];
+        double[]xData = {532.0,605.0,635.0,685.0,750.0};
 
-        //ImagePlus Result = SpectralCalibration.calibrate(filePath);
-        //Result.show();
-        AxialCalibration.calibrate(filePath);
+        for (int i=0;i<5;i++){
+            Result[i] = SpectralCalibration.calibrate(directory+nd2files[i]);
+            Distance[i] = Math.sqrt(Result[i][0]*Result[i][0]+Result[i][1]*Result[i][1]);
+        }
+        WeightedObservedPoints obs = new WeightedObservedPoints();
+        for (int i = 0; i < xData.length; i++) {
+            System.out.println("Distance:"+Distance[i]);
+            obs.add(xData[i],Distance[i]);
+        }
+
+        PolynomialCurveFitter fitter = PolynomialCurveFitter.create(2);
+        double[] parameters = fitter.fit(obs.toList());
+
+        // Parameters: parameters[0] = a, parameters[1] = b, parameters[2] = c,
+        // parameters[3] = d, parameters[4] = e
+        double c = parameters[0];
+        double b = parameters[1];
+        double a = parameters[2];
+
+        XYSeries fitted = new XYSeries("Fitted curve");
+        for (int i = 300; i<= 800; i++){
+            //double y = coefficients[4]* i* i* i* i + coefficients[3]* i* i* i + coefficients[2] * i * i + coefficients[1] * i + coefficients[0];
+            double y = a* i * i+ b*i +c;
+            fitted.add(i, y);
+        }
+
+        // Print the best-fit parameters (a and b)
+        System.out.println("Best-fit parameter (a): " + a);
+        System.out.println("Best-fit parameter (b): " + b);
+        System.out.println("Best-fit parameter (c): " + c);
+        XYSeries dist_wavelength = new XYSeries("Distance");
+        for (int i = 0; i < xData.length; i++) {
+            System.out.println("Distance:"+Distance[i]);
+            dist_wavelength.add(xData[i],Distance[i]);
+        }
+        
+        XYSeriesCollection parabolaset_zeroth = new XYSeriesCollection();
+        parabolaset_zeroth.addSeries(fitted);
+        XYSeriesCollection dataset_first = new XYSeriesCollection();
+        dataset_first.addSeries(dist_wavelength);
+        JFreeChart parabola_zeroth = ChartFactory.createXYLineChart(
+            "Spectral Distance VS Wavelength", // Chart title
+            "Wavelength(nm)", // X-axis label
+            "Distance(pixels)", // Y-axis label
+            parabolaset_zeroth // Dataset
+        );
+        XYPlot plot = parabola_zeroth.getXYPlot();
+        plot.getRangeAxis().setRange(600,1000);
+        plot.setDataset(1, dataset_first);
+        plot.setRenderer(1, new XYLineAndShapeRenderer());
+        
+        JFrame frame = new JFrame("Distance VS Wavelength");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        frame.add(new ChartPanel(parabola_zeroth));
+
+        frame.pack();
+        frame.setVisible(true);*/
+        
+        //
+
+
         /*
         testImage.getProcessor().threshold(170);
 

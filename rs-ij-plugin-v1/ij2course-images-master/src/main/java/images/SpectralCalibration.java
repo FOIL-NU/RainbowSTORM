@@ -1,9 +1,13 @@
-package de.mpicbg.scf.rhaase.fiji.ij2course.images;
+package images;
 
 import ij.IJ;
+import ij.gui.Overlay;
 import ij.gui.Roi;
 import ij.ImagePlus;
 import com.opencsv.CSVWriter;
+
+import Services.service;
+
 import java.io.FileWriter;
 import net.imglib2.algorithm.localization.Gaussian;
 import net.imglib2.algorithm.localization.LevenbergMarquardtSolver;
@@ -11,21 +15,26 @@ import net.imglib2.algorithm.localization.LocalizationUtils;
 import net.imglib2.algorithm.localization.MLGaussianEstimator;
 import net.imglib2.algorithm.localization.Observation;
 import ij.measure.Measurements;
+import ij.plugin.ContrastEnhancer;
 import ij.plugin.HyperStackConverter;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.plugin.filter.Convolver;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.checkerframework.checker.units.qual.min;
+
 import loci.plugins.BF;
+import loci.poi.hssf.util.HSSFColor.RED;
 import net.imglib2.img.ImagePlusAdapter;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Author: Robert Haase, Scientific Computing Facility, MPI-CBG Dresden,
@@ -60,19 +69,15 @@ import java.util.List;
 
 public class SpectralCalibration implements PlugInFilter {
 
-    static class Point {
-        int color;
-        boolean visited;
-
-        public Point(int color) {
-            this.color = color;
-            this.visited = false;
-        }
-    }
+    private static service findService;
 
     @Override
     public int setup(String s, ImagePlus imagePlus) {
         return DOES_8G + DOES_16 + DOES_32;
+    }
+
+    public SpectralCalibration(service findService){
+        SpectralCalibration.findService = findService;
     }
 
     @Override
@@ -120,53 +125,6 @@ public class SpectralCalibration implements PlugInFilter {
         }
     }
 
-    public static void findSet(int x, int y, Point[][] points, List<int[]> pointSet) {
-      // Get the point at the current coordinates
-        Point currentPoint_left = points[x-1][y];
-        Point currentPoint_down = points[x][y-1];
-        Point currentPoint_right = points[x+1][y];
-        Point currentPoint_up = points[x][y+1];
-
-        // Check if the point is valid (color is 255 and not visited)
-        if (currentPoint_left.color == 255 && !currentPoint_left.visited) {
-            // Mark the current point as visited
-            currentPoint_left.visited = true;
-
-            // Add the current point to the pointSet
-            pointSet.add(new int[] { x-1, y });
-            // Recursively check neighboring points
-            findSet(x - 1, y, points, pointSet); // left
-        }
-        if (currentPoint_down.color == 255 && !currentPoint_down.visited) {
-            // Mark the current point as visited
-            currentPoint_down.visited = true;
-
-            // Add the current point to the pointSet
-            pointSet.add(new int[] { x, y-1 });
-            // Recursively check neighboring points
-            findSet(x, y-1, points, pointSet); // left
-        }
-        if (currentPoint_right.color == 255 && !currentPoint_right.visited) {
-            // Mark the current point as visited
-            currentPoint_right.visited = true;
-
-            // Add the current point to the pointSet
-            pointSet.add(new int[] { x+1, y });
-            // Recursively check neighboring points
-            findSet(x + 1, y, points, pointSet); // left
-        }
-        if (currentPoint_up.color == 255 && !currentPoint_up.visited) {
-            // Mark the current point as visited
-            currentPoint_up.visited = true;
-
-            // Add the current point to the pointSet
-            pointSet.add(new int[] { x, y+1 });
-            // Recursively check neighboring points
-            findSet(x , y+1, points, pointSet); // left
-        }
-        return;
-    }
-
     private static List<float[]> findCentroid(ImageProcessor averagedIp) throws Exception {
         List<float[]> centroids = new ArrayList<>();
         
@@ -177,32 +135,31 @@ public class SpectralCalibration implements PlugInFilter {
         };
         int kernelWidth = 3;
         int kernelHeight = 3;
+        Overlay overlay = new Overlay();
+
+                // Display the adjusted image
+
 
         FloatProcessor fp = averagedIp.convertToFloatProcessor();
-
         Convolver convolver = new Convolver();
         convolver.setNormalize(true);
         convolver.convolve(fp, kernel, kernelWidth, kernelHeight);
-
-        // Convert the result back to a byte processor
         ImageProcessor resultIp = fp.convertToByteProcessor(true);
-        int width = resultIp.getWidth();
-        int height = resultIp.getHeight();
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int pixelValue = resultIp.get(x, y);
-                if (pixelValue < 20) {
-                    resultIp.set(x, y, 0);
-                } else {
-                    resultIp.set(x, y, 255);
-                }
-            }
-        }
+
+        int width = averagedIp.getWidth();
+        int height = averagedIp.getHeight();
+        Roi seg_Roi = new Roi(0,60,width,height*0.8-60);
+        resultIp.setRoi(seg_Roi);
+        ImageProcessor seg_ip = resultIp.crop();
+        height = seg_ip.getHeight();
+        
+        seg_ip.threshold(75);
+
         Point[][] pointArray = new Point[width][height];
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                int pixelValue = resultIp.get(x, y);
+                int pixelValue = seg_ip.get(x, y);
                 pointArray[x][y] = new Point(pixelValue);
             }
         }
@@ -214,7 +171,8 @@ public class SpectralCalibration implements PlugInFilter {
                     pointArray[x][y].visited = true;
                     if (pointArray[x][y].color == 255){
                         List<int[]> cur_pointset = new ArrayList<>();
-                        findSet(x,y,pointArray,cur_pointset);
+                        //cur_pointset.add(new int[] { x, y });
+                        service.findSet(x,y,pointArray,cur_pointset);
                         int minX = Integer.MAX_VALUE;
                         int maxX = Integer.MIN_VALUE;
                         int minY = Integer.MAX_VALUE;
@@ -227,28 +185,40 @@ public class SpectralCalibration implements PlugInFilter {
                             if (point[1] > maxY) {maxY = point[1];}
                         }
                         
-                        System.out.println("minX, minY: "+minX+","+minY);
-                        System.out.println("maxX, maxY: "+maxX+","+maxY);
-                        Roi roi = new Roi(minX-2,minY-2,maxX-minX+4,maxY-minY+4);
+                        Roi roi = new Roi(minX-2,minY+58,maxX-minX+4,maxY-minY+4);
                         averagedIp.setRoi(roi);
                         ImageProcessor cropped = averagedIp.crop();
-                        double[] params = fit2DGaussian(cropped);
+                        double[] params = service.fit2DGaussian(cropped);
 
                         //double centroid_x = (cropped.getRoi().getMinX() + params[0]);
 			            //double centroid_y = (cropped.getRoi().getMinY() + params[1]);
-                        System.out.println("centroid_x: "+params[0]);
-                        System.out.println("centroid_y: "+params[1]);
 
 
                         float[] cur_centroid = new float[2];
                         cur_centroid[0] = (float) (minX - 2 + params[0]);
-                        cur_centroid[1] = (float) (minY - 2 + params[1]);
+                        cur_centroid[1] = (float) (minY + 58 + params[1]);
                         centroids.add(cur_centroid);
+                        
+                        int armLength = 3;
+                        int centerX = (int) cur_centroid[0];
+                        int centerY = (int) cur_centroid[1];
+                        Roi horizontalLine = new Roi(centerX - armLength, centerY, 2 * armLength, 1);
+                        overlay.add(horizontalLine);
+
+                        // Create the vertical arm
+                        Roi verticalLine = new Roi(centerX, centerY - armLength, 1, 2 * armLength);
+                        overlay.add(verticalLine);
+                        
+                        overlay.setStrokeColor(Color.RED);
                         
                     }
                 }
             }
         }
+
+        ImagePlus overlayImagePlus = new ImagePlus("Overlay Image", averagedIp);
+        overlayImagePlus.setOverlay(overlay);
+        overlayImagePlus.show();
         return centroids;
     }
 
@@ -267,23 +237,13 @@ public class SpectralCalibration implements PlugInFilter {
         }
     }
 
-    private static double[] fit2DGaussian(ImageProcessor ip) throws Exception {
-		long[] center = new long[] { (long)ip.getWidth() / 2, (long)ip.getHeight() / 2 };
-		net.imglib2.Point cpoint = new net.imglib2.Point(center);
-
-		Observation data = LocalizationUtils.gatherObservationData(ImagePlusAdapter.wrapShort(new ImagePlus("", ip)), cpoint, center);
-
-		double[] params = new MLGaussianEstimator(2.0, 2).initializeFit(cpoint, data);
-
-		LevenbergMarquardtSolver.solve(data.X, params, data.I, new Gaussian(), 1e-3, 1e-1, 300);
-
-		return params;
-	}
-
-    public static ImagePlus calibrate(String filePath) throws Exception {
+    public static float[] calibrate(String filePath) throws Exception {
         // Replace "path/to/your/nd2file.nd2" with the actual path to your ND2 file
        
         ImagePlus imagePlus = readND2(filePath);
+        float[] auto_calibrated = new float[2];
+
+        
 
         // Check if the ND2 file was successfully read
         if (imagePlus != null) {
@@ -306,68 +266,81 @@ public class SpectralCalibration implements PlugInFilter {
 
             List<float[]> centroids = findCentroid(averagedIp);
 
-            String csvFname = "C:\\Users\\FOIL_member\\Downloads\\centroids.csv";
+            String csvFname = "C:\\Users\\xufen\\Downloads\\centroids.csv";
 
             writeFloatArrayListToCSV(centroids, csvFname);
 
             float left_min_x = averagedIp.getWidth(), right_min_x = averagedIp.getWidth();
-            float[] left_min_x_centroid = centroids.get(0);
             float left_max_x = 0, right_max_x = 0;
-            float[] left_max_x_centroid = centroids.get(0);
             float left_min_y = averagedIp.getHeight(), right_min_y = averagedIp.getHeight();
-            float[] left_min_y_centroid = centroids.get(0);
             float left_max_y = 0, right_max_y = 0;
-            float[] left_max_y_centroid = centroids.get(0);
+            float[][] left_centroids = new float[4][2];
+            float[][] right_centroids = new float[4][2];
 
             for (float[] centroid : centroids) {
                 if (centroid[0] < averagedIp.getWidth()/2){
                     if (centroid[0] < left_min_x) {
                         left_min_x = centroid[0];
-                        left_min_x_centroid = centroid;
+                        left_centroids[0] = centroid;
                     }
                     if (centroid[0] > left_max_x) {
                         left_max_x = centroid[0];
-                        left_max_x_centroid = centroid;
+                        left_centroids[1] = centroid;
                     }
                     if (centroid[1] < left_min_y) {
                         left_min_y = centroid[1];
-                        left_min_y_centroid = centroid;
+                        left_centroids[2] = centroid;
                     }
-                    if (centroid[1] < left_max_x) {
-                        left_max_x = centroid[1];
-                        left_max_y_centroid = centroid;
+                    if (centroid[1] > left_max_y) {
+                        left_max_y = centroid[1];
+                        left_centroids[3] = centroid;
                     }
                 }
                 else{
                     if (centroid[0] < right_min_x) {
                         right_min_x = centroid[0];
-                        left_min_x_centroid = centroid;
+                        right_centroids[0] = centroid;
                     }
                     if (centroid[0] > right_max_x) {
                         right_max_x = centroid[0];
-                        left_max_x_centroid = centroid;
+                        right_centroids[1] = centroid;
                     }
                     if (centroid[1] < right_min_y) {
                         right_min_y = centroid[1];
-                        left_min_y_centroid = centroid;
+                        right_centroids[2] = centroid;
                     }
-                    if (centroid[1] < right_max_x) {
-                        right_max_x = centroid[1];
-                        left_max_y_centroid = centroid;
+                    if (centroid[1] > right_max_y) {
+                        right_max_y = centroid[1];
+                        right_centroids[3] = centroid;
                     }
                 }
             }
+
+            float x_sum = 0;
+            float y_sum = 0;
+
+            for (int i =0;i<4;i++) {
+                x_sum += right_centroids[i][0] - left_centroids[i][0];
+                y_sum += right_centroids[i][1] - left_centroids[i][1];
+                System.out.println("left: "+left_centroids[i][0]+", "+left_centroids[i][1]);
+                System.out.println("right: "+right_centroids[i][0]+", "+right_centroids[i][1]);
+            }
+            
+            auto_calibrated[0] = x_sum/4;
+            auto_calibrated[1] = y_sum/4;
+
+            System.out.println("Calibrate x: "+auto_calibrated[0]+", y: "+auto_calibrated[1]);
 
             // Create a new ImagePlus with the averaged image
             ImagePlus averagedImage = new ImagePlus("Averaged", averagedIp);
 
             // Replace "path/to/output/averaged.tif" with the desired path for the output averaged file
-            String outputFilePath = "C:\\Users\\FOIL_member\\Downloads\\averaged.tif";
+            String outputFilePath = "C:\\Users\\xufen\\Downloads\\averaged.tif";
 
             // Save the averaged image as a new file
             IJ.saveAsTiff(averagedImage, outputFilePath);
-            return averagedImage;
+            return auto_calibrated;
         }
-        return imagePlus;
+        return auto_calibrated;
     }
 }

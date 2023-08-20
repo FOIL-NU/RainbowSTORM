@@ -1,4 +1,4 @@
-package de.mpicbg.scf.rhaase.fiji.ij2course.images;
+package images;
 import ij.IJ;
 import ij.gui.Roi;
 import ij.gui.TextRoi;
@@ -7,6 +7,9 @@ import ij.gui.Overlay;
 import java.awt.Color;
 import ij.gui.GenericDialog;
 import com.opencsv.CSVWriter;
+
+import Services.service;
+
 import java.io.FileWriter;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -45,70 +48,6 @@ public class AxialCalibration implements PlugInFilter {
     public void run(ImageProcessor arg0) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'run'");
-    }
-
-    static class Point {
-        int color;
-        boolean visited;
-
-        public Point(int color) {
-            this.color = color;
-            this.visited = false;
-        }
-    }
-
-    public static void findSet(int x, int y, Point[][] points, List<int[]> pointSet) {
-        // Get the point at the current coordinates
-        if (x>=1){
-            Point currentPoint_left = points[x-1][y];
-            if (currentPoint_left.color == 255 && !currentPoint_left.visited) {
-                // Mark the current point as visited
-                currentPoint_left.visited = true;
-    
-                // Add the current point to the pointSet
-                pointSet.add(new int[] { x-1, y });
-                // Recursively check neighboring points
-                findSet(x - 1, y, points, pointSet); // left
-            }
-        }
-        if (y>=1){
-            Point currentPoint_down = points[x][y-1];
-            if (currentPoint_down.color == 255 && !currentPoint_down.visited) {
-                // Mark the current point as visited
-                currentPoint_down.visited = true;
-    
-                // Add the current point to the pointSet
-                pointSet.add(new int[] { x, y-1 });
-                // Recursively check neighboring points
-                findSet(x, y-1, points, pointSet); // left
-            }
-        }
-        if (x<points.length-1){
-            Point currentPoint_right = points[x+1][y];
-            if (currentPoint_right.color == 255 && !currentPoint_right.visited) {
-                // Mark the current point as visited
-                currentPoint_right.visited = true;
-    
-                // Add the current point to the pointSet
-                pointSet.add(new int[] { x+1, y });
-                // Recursively check neighboring points
-                findSet(x + 1, y, points, pointSet); // left
-            }
-        }
-        if (y<points[0].length-1){
-            Point currentPoint_up = points[x][y+1];
-            if (currentPoint_up.color == 255 && !currentPoint_up.visited) {
-                // Mark the current point as visited
-                currentPoint_up.visited = true;
-    
-                // Add the current point to the pointSet
-                pointSet.add(new int[] { x, y+1 });
-                // Recursively check neighboring points
-                findSet(x , y+1, points, pointSet); // left
-            }
-        }
-  
-        return;
     }
 
     public static void calibrate(String filePath) throws Exception{
@@ -164,7 +103,8 @@ public class AxialCalibration implements PlugInFilter {
                     pointArray[x][y].visited = true;
                     if (pointArray[x][y].color == 255){
                         List<int[]> cur_pointset = new ArrayList<>();
-                        findSet(x,y,pointArray,cur_pointset);
+                        //cur_pointset.add(new int[] { x, y });
+                        service.findSet(x,y,pointArray,cur_pointset);
                         int minX = Integer.MAX_VALUE;
                         int maxX = Integer.MIN_VALUE;
                         int minY = Integer.MAX_VALUE;
@@ -247,7 +187,7 @@ public class AxialCalibration implements PlugInFilter {
         }
 
         List<int[]> cur_pointset = new ArrayList<>();
-        findSet(roi_x_center_First,roi_y_center_First,pointArray,cur_pointset);
+        service.findSet(roi_x_center_First,roi_y_center_First,pointArray,cur_pointset);
         int minX_First = Integer.MAX_VALUE;
         int maxX_First = Integer.MIN_VALUE;
         int minY_First = Integer.MAX_VALUE;
@@ -352,6 +292,7 @@ public class AxialCalibration implements PlugInFilter {
         XYSeries series_first = new XYSeries("First Order FWHM");
         XYSeries parabolaSeries_zeroth = new XYSeries("Zeroth Order Parabola");
         XYSeries parabolaSeries_first = new XYSeries("First Order Parabola");
+        XYSeries ratio_zero_first = new XYSeries("Ratio");
         WeightedObservedPoints zeroth_obs = new WeightedObservedPoints();
         WeightedObservedPoints first_obs = new WeightedObservedPoints();
         //int start_frame = (int) (numFrames*0.15);
@@ -390,6 +331,11 @@ public class AxialCalibration implements PlugInFilter {
         }
         double first_min = -first_coefficients[1] / (2 * first_coefficients[2]);
 
+        for (int i = start_end_zeroth[0]; i <= start_end_first[1];i++) {
+            double ratio = (first_coefficients[2] * i * i + first_coefficients[1] * i + first_coefficients[0])/(zeroth_coefficients[2] * i * i + zeroth_coefficients[1] * i + zeroth_coefficients[0]);
+            ratio_zero_first.add(i,ratio);
+        }
+
         System.out.println("zeroth_min:"+zeroth_min+"; first_min:"+first_min);
         XYSeriesCollection dataset_zeroth = new XYSeriesCollection();
         dataset_zeroth.addSeries(series_zeroth);
@@ -399,11 +345,24 @@ public class AxialCalibration implements PlugInFilter {
         parabolaset_zeroth.addSeries(parabolaSeries_zeroth);
         XYSeriesCollection parabolaset_first = new XYSeriesCollection();
         parabolaset_first.addSeries(parabolaSeries_first);
+
+
+        XYSeriesCollection raCollection_first_zero = new XYSeriesCollection();
+        raCollection_first_zero.addSeries(ratio_zero_first);
+
+
         JFreeChart parabola_zeroth = ChartFactory.createXYLineChart(
             "FWHM VS Z", // Chart title
             "Z", // X-axis label
             "FWHM", // Y-axis label
             parabolaset_zeroth // Dataset
+        );
+
+        JFreeChart ratio_Chart = ChartFactory.createXYLineChart(
+            "Ratio VS Z", // Chart title
+            "Z", // X-axis label
+            "First Order/Zeroth Order", // Y-axis label
+            raCollection_first_zero // Dataset
         );
 
         XYPlot plot = parabola_zeroth.getXYPlot();
@@ -420,6 +379,14 @@ public class AxialCalibration implements PlugInFilter {
 
         frame.pack();
         frame.setVisible(true);
+        
+        JFrame frame_ratio = new JFrame("Ratio VS Z");
+        frame_ratio.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        frame_ratio.add(new ChartPanel(ratio_Chart));
+
+        frame_ratio.pack();
+        frame_ratio.setVisible(true);
     }
 
     private static ImagePlus readND2(String filePath) {

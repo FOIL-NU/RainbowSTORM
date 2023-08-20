@@ -1,4 +1,4 @@
-package de.mpicbg.scf.rhaase.fiji.ij2course.images;
+package images;
 
 import net.imglib2.Cursor;
 import net.imglib2.algorithm.stats.ComputeMinMax;
