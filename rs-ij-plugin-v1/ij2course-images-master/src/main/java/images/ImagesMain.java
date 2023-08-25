@@ -92,6 +92,7 @@ public class ImagesMain {
     public static <T extends RealType<T>> void main(String... args) throws Exception {
 
         
+        
         OpenDialog od = new OpenDialog("Open ND2 File", null);
         String directory = od.getDirectory();
         String fileName = od.getFileName();
@@ -104,12 +105,12 @@ public class ImagesMain {
         String[] splitted = fileName.split("_");
         String zeroth_order_filePath = directory + splitted[0] +'_'+ splitted[1]+"_zeroth.tif";
         String first_order_filePath = directory + splitted[0] +'_'+ splitted[1]+"_first.tif";
-
-        ImageProcessing.localization(zeroth_order_filePath,first_order_filePath);
+        String whole_img_filepath = directory+"1141_com002.nd2";
+        
 
         
         //AxialCalibration.calibrate(filePath);
-        /*
+        
         // Combine the directory and filename to get the full path
 
         // Use Bio-Formats to open the ND2 file
@@ -125,27 +126,29 @@ public class ImagesMain {
         nd2files[3] = "685_nm.nd2";
         nd2files[4] = "750_nm.nd2";
         float[][] Result = new float[5][2];
-        double[] Distance = new double[5];
         double[]xData = {532.0,605.0,635.0,685.0,750.0};
 
         for (int i=0;i<5;i++){
             Result[i] = SpectralCalibration.calibrate(directory+nd2files[i]);
-            Distance[i] = Math.sqrt(Result[i][0]*Result[i][0]+Result[i][1]*Result[i][1]);
         }
-        WeightedObservedPoints obs = new WeightedObservedPoints();
+        WeightedObservedPoints obs_x = new WeightedObservedPoints();
+        WeightedObservedPoints obs_y = new WeightedObservedPoints();
         for (int i = 0; i < xData.length; i++) {
-            System.out.println("Distance:"+Distance[i]);
-            obs.add(xData[i],Distance[i]);
+            System.out.println("X Distance:"+Result[i][0]);
+            obs_x.add(xData[i],Result[i][0]);
+            obs_y.add(xData[i],Result[i][1]);
         }
 
-        PolynomialCurveFitter fitter = PolynomialCurveFitter.create(2);
-        double[] parameters = fitter.fit(obs.toList());
+        PolynomialCurveFitter fitter_x = PolynomialCurveFitter.create(2);
+        PolynomialCurveFitter fitter_y = PolynomialCurveFitter.create(2);
+        double[] x_parameters = fitter_x.fit(obs_x.toList());
+        double[] y_parameters = fitter_y.fit(obs_y.toList());
 
         // Parameters: parameters[0] = a, parameters[1] = b, parameters[2] = c,
         // parameters[3] = d, parameters[4] = e
-        double c = parameters[0];
-        double b = parameters[1];
-        double a = parameters[2];
+        double c = y_parameters[0];
+        double b = y_parameters[1];
+        double a = y_parameters[2];
 
         XYSeries fitted = new XYSeries("Fitted curve");
         for (int i = 300; i<= 800; i++){
@@ -160,8 +163,8 @@ public class ImagesMain {
         System.out.println("Best-fit parameter (c): " + c);
         XYSeries dist_wavelength = new XYSeries("Distance");
         for (int i = 0; i < xData.length; i++) {
-            System.out.println("Distance:"+Distance[i]);
-            dist_wavelength.add(xData[i],Distance[i]);
+            System.out.println("Distance:"+Result[i][1]);
+            dist_wavelength.add(xData[i],Result[i][1]);
         }
         
         XYSeriesCollection parabolaset_zeroth = new XYSeriesCollection();
@@ -175,7 +178,7 @@ public class ImagesMain {
             parabolaset_zeroth // Dataset
         );
         XYPlot plot = parabola_zeroth.getXYPlot();
-        plot.getRangeAxis().setRange(600,1000);
+        plot.getRangeAxis().setRange(5,25);
         plot.setDataset(1, dataset_first);
         plot.setRenderer(1, new XYLineAndShapeRenderer());
         
@@ -185,9 +188,11 @@ public class ImagesMain {
         frame.add(new ChartPanel(parabola_zeroth));
 
         frame.pack();
-        frame.setVisible(true);*/
+        frame.setVisible(true);
         
         //
+        ImageProcessing.localization(whole_img_filepath,x_parameters,y_parameters);
+
 
 
         /*

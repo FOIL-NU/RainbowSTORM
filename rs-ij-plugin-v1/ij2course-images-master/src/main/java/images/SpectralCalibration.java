@@ -86,7 +86,7 @@ public class SpectralCalibration implements PlugInFilter {
         String inputFilePath = "path/to/your/nd2file.nd2";
 
         // Read the ND2 file using Bio-Formats
-        ImagePlus imagePlus = readND2(inputFilePath);
+        ImagePlus imagePlus = service.readND2(inputFilePath);
 
         // Check if the ND2 file was successfully read
         if (imagePlus != null) {
@@ -115,15 +115,6 @@ public class SpectralCalibration implements PlugInFilter {
         }
     }
 
-    private static ImagePlus readND2(String filePath) {
-        try {
-            // Use Bio-Formats to read the ND2 file
-            return BF.openImagePlus(filePath)[0];
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 
     private static List<float[]> findCentroid(ImageProcessor averagedIp) throws Exception {
         List<float[]> centroids = new ArrayList<>();
@@ -173,19 +164,10 @@ public class SpectralCalibration implements PlugInFilter {
                         List<int[]> cur_pointset = new ArrayList<>();
                         //cur_pointset.add(new int[] { x, y });
                         service.findSet(x,y,pointArray,cur_pointset);
-                        int minX = Integer.MAX_VALUE;
-                        int maxX = Integer.MIN_VALUE;
-                        int minY = Integer.MAX_VALUE;
-                        int maxY = Integer.MIN_VALUE;
-
-                        for (int[] point : cur_pointset) {
-                            if (point[0] < minX) {minX = point[0];}
-                            if (point[1] < minY) {minY = point[1];}
-                            if (point[0] > maxX) {maxX = point[0];}
-                            if (point[1] > maxY) {maxY = point[1];}
-                        }
                         
-                        Roi roi = new Roi(minX-2,minY+58,maxX-minX+4,maxY-minY+4);
+                        int[] boundary = service.findBoundary(cur_pointset);
+                        
+                        Roi roi = new Roi(boundary[0]-2,boundary[1]+58,boundary[2]-boundary[0]+4,boundary[3]-boundary[1]+4);
                         averagedIp.setRoi(roi);
                         ImageProcessor cropped = averagedIp.crop();
                         double[] params = service.fit2DGaussian(cropped);
@@ -195,8 +177,8 @@ public class SpectralCalibration implements PlugInFilter {
 
 
                         float[] cur_centroid = new float[2];
-                        cur_centroid[0] = (float) (minX - 2 + params[0]);
-                        cur_centroid[1] = (float) (minY + 58 + params[1]);
+                        cur_centroid[0] = (float) (boundary[0] - 2 + params[0]);
+                        cur_centroid[1] = (float) (boundary[1] + 58 + params[1]);
                         centroids.add(cur_centroid);
                         
                         int armLength = 3;
@@ -240,7 +222,7 @@ public class SpectralCalibration implements PlugInFilter {
     public static float[] calibrate(String filePath) throws Exception {
         // Replace "path/to/your/nd2file.nd2" with the actual path to your ND2 file
        
-        ImagePlus imagePlus = readND2(filePath);
+        ImagePlus imagePlus = service.readND2(filePath);
         float[] auto_calibrated = new float[2];
 
         
