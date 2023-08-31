@@ -8,6 +8,11 @@ import com.opencsv.CSVWriter;
 
 import Services.service;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.statistics.HistogramDataset;
 import java.io.FileWriter;
 import net.imglib2.algorithm.localization.Gaussian;
 import net.imglib2.algorithm.localization.LevenbergMarquardtSolver;
@@ -128,33 +133,33 @@ public class SpectralCalibration implements PlugInFilter {
         int kernelHeight = 3;
         Overlay overlay = new Overlay();
 
-                // Display the adjusted image
+        // Display the adjusted image
 
+        ImageProcessor processIP = averagedIp.duplicate();
+        processIP.convolve(kernel, kernelWidth, kernelHeight);
+        /*int[] histogram = processIP.getHistogram();
 
-        FloatProcessor fp = averagedIp.convertToFloatProcessor();
-        Convolver convolver = new Convolver();
-        convolver.setNormalize(true);
-        convolver.convolve(fp, kernel, kernelWidth, kernelHeight);
-        ImageProcessor resultIp = fp.convertToByteProcessor(true);
-
-        int width = averagedIp.getWidth();
-        int height = averagedIp.getHeight();
-        resultIp.setRoi(calibration_roi);
-        ImageProcessor seg_ip = resultIp.crop();
-        height = seg_ip.getHeight();
-
-        int threshold_value = (int) (seg_ip.getStatistics().mean + 2.6 *seg_ip.getStatistics().stdDev);
-        seg_ip.threshold(threshold_value);
-
-        ImagePlus whatImagePlus = new ImagePlus("Overlay Image", seg_ip);
-        whatImagePlus.show();
+        for (int i = 0; i < 1000; i++) {
+            IJ.log(i + ": " + histogram[i]);
+        }*/
         
+        processIP.setRoi(calibration_roi);
+        averagedIp.setRoi(calibration_roi);
+        ImageProcessor seg_ip = averagedIp.crop();
+        ImageProcessor threashold_seg_ip = processIP.crop();
+        int width = seg_ip.getWidth();
+        int height = seg_ip.getHeight();
+
+        int threshold_value = (int) (threashold_seg_ip.getStatistics().mean + 3.6 *threashold_seg_ip.getStatistics().stdDev);
+        System.out.println("Mean is:"+threashold_seg_ip.getStatistics().mean);
+        System.out.println("threshold_value is:"+threshold_value);
+        threashold_seg_ip.threshold(threshold_value);
 
         Point[][] pointArray = new Point[width][height];
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                int pixelValue = seg_ip.get(x, y);
+                int pixelValue = threashold_seg_ip.get(x, y);
                 pointArray[x][y] = new Point(pixelValue);
             }
         }
@@ -171,9 +176,12 @@ public class SpectralCalibration implements PlugInFilter {
                         
                         int[] boundary = service.findBoundary(cur_pointset);
                         
-                        Roi roi = new Roi(boundary[0]-2,boundary[1]+58,boundary[2]-boundary[0]+4,boundary[3]-boundary[1]+4);
-                        averagedIp.setRoi(roi);
-                        ImageProcessor cropped = averagedIp.crop();
+                        Roi roi = new Roi(boundary[0]-2,boundary[1]-2,boundary[2]-boundary[0]+5,boundary[3]-boundary[1]+5);
+                        
+                        
+                        seg_ip.setRoi(roi);
+                        ImageProcessor cropped = seg_ip.crop();
+                        
                         double[] params = service.fit2DGaussian(cropped);
 
                         //double centroid_x = (cropped.getRoi().getMinX() + params[0]);
@@ -182,7 +190,7 @@ public class SpectralCalibration implements PlugInFilter {
 
                         float[] cur_centroid = new float[2];
                         cur_centroid[0] = (float) (boundary[0] - 2 + params[0]);
-                        cur_centroid[1] = (float) (boundary[1] + 58 + params[1]);
+                        cur_centroid[1] = (float) (boundary[1] - 2 + params[1]);
                         centroids.add(cur_centroid);
                         
                         int armLength = 3;
@@ -202,7 +210,7 @@ public class SpectralCalibration implements PlugInFilter {
             }
         }
 
-        ImagePlus overlayImagePlus = new ImagePlus("Overlay Image", averagedIp);
+        ImagePlus overlayImagePlus = new ImagePlus("Overlay Image", seg_ip);
         overlayImagePlus.setOverlay(overlay);
         overlayImagePlus.show();
         return centroids;
@@ -238,33 +246,61 @@ public class SpectralCalibration implements PlugInFilter {
 
             System.out.println("NumFrames: "+numFrames);
             // Average all the frames
-            ImageProcessor averagedIp = imagePlus.getStack().getProcessor(1).duplicate(); // Initialize with the first frame
+            ImageProcessor firstIp = imagePlus.getStack().getProcessor(1).duplicate(); // Initialize with the first frame
 
-            for (int i = 2; i <= numFrames; i++) {
-                ImageProcessor currentIp = imagePlus.getStack().getProcessor(i);
-                averagedIp.copyBits(currentIp, 0, 0, 3);//Add
+            float[] accPixels = new float[firstIp.getPixelCount()];
+
+            // Loop through each slice in the stack
+            for (int i = 1; i <= numFrames; i++) {
+                // Get the ImageProcessor of the current slice
+                ImageProcessor sliceIp = imagePlus.getStack().getProcessor(i);
+
+                // Accumulate pixel values
+                for (int p = 0; p < accPixels.length; p++) {
+                    accPixels[p] += sliceIp.getf(p);
+                }
             }
 
-            // Divide by the number of frames to compute the average
-            averagedIp.multiply(1.0 / numFrames);
+            // Calculate the average by dividing accumulated values
+            for (int p = 0; p < accPixels.length; p++) {
+                accPixels[p] /= numFrames;
+            }
+
+            // Create a new ImageProcessor for the average image
+            ImageProcessor avgIp = firstIp.createProcessor(firstIp.getWidth(), firstIp.getHeight());
+
+            // Set the average pixel values to the new ImageProcessor
+            for (int p = 0; p < accPixels.length; p++) {
+                avgIp.setf(p, accPixels[p]);
+            }
+
+            for (int y = 0; y < avgIp.getHeight(); y++) {
+                for (int x = 0; x < avgIp.getWidth(); x++) {
+                    //int pixelValue = threashold_seg_ip.get(x, y);
+                    //pointArray[x][y] = new Point(pixelValue);
+                    if (avgIp.get(x,y) >= 2048){
+                        System.out.println("Pixel val:"+avgIp.get(x,y));
+                    }
+                }
+            }
 
             //ImageProcessor filtered = GaussianFilter(averagedIp);
 
-            List<float[]> centroids = findCentroid(averagedIp,calibration_roi);
+            List<float[]> centroids = findCentroid(avgIp,calibration_roi);
 
             String csvFname = "C:\\Users\\xufen\\Downloads\\centroids.csv";
 
             writeFloatArrayListToCSV(centroids, csvFname);
 
-            float left_min_x = averagedIp.getWidth(), right_min_x = averagedIp.getWidth();
+            float left_min_x = avgIp.getWidth(), right_min_x = avgIp.getWidth();
             float left_max_x = 0, right_max_x = 0;
-            float left_min_y = averagedIp.getHeight(), right_min_y = averagedIp.getHeight();
+            float left_min_y = avgIp.getHeight(), right_min_y = avgIp.getHeight();
             float left_max_y = 0, right_max_y = 0;
             float[][] left_centroids = new float[4][2];
             float[][] right_centroids = new float[4][2];
 
             for (float[] centroid : centroids) {
-                if (centroid[0] < averagedIp.getWidth()/2){
+                if (centroid[0] < avgIp.getWidth()/2){
                     if (centroid[0] < left_min_x) {
                         left_min_x = centroid[0];
                         left_centroids[0] = centroid;
@@ -318,7 +354,7 @@ public class SpectralCalibration implements PlugInFilter {
             System.out.println("Calibrate x: "+auto_calibrated[0]+", y: "+auto_calibrated[1]);
 
             // Create a new ImagePlus with the averaged image
-            ImagePlus averagedImage = new ImagePlus("Averaged", averagedIp);
+            ImagePlus averagedImage = new ImagePlus("Averaged", avgIp);
 
             // Replace "path/to/output/averaged.tif" with the desired path for the output averaged file
             String outputFilePath = "C:\\Users\\xufen\\Downloads\\averaged.tif";

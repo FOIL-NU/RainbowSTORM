@@ -21,7 +21,6 @@ public class service {
     public static double[] fit2DGaussian(ImageProcessor ip) throws Exception {
 		long[] center = new long[] { (long)ip.getWidth() / 2, (long)ip.getHeight() / 2 };
 		net.imglib2.Point cpoint = new net.imglib2.Point(center);
-
 		Observation data = LocalizationUtils.gatherObservationData(ImagePlusAdapter.wrapShort(new ImagePlus("", ip)), cpoint, center);
 
 		double[] params = new MLGaussianEstimator(2.0, 2).initializeFit(cpoint, data);

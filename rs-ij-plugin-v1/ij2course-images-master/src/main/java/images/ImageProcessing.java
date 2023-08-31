@@ -70,6 +70,60 @@ public class ImageProcessing implements PlugInFilter {
         return zeroth_kdtree;
     }
 
+    private static float[] find_bright_blob(Point[][] pointArray, int x, int y, ImageProcessor slice) throws Exception{
+        List<int[]> cur_pointset = new ArrayList<>();
+        cur_pointset.add(new int[] { x, y });
+        service.findSet(x,y,pointArray,cur_pointset);
+        int[] boundary = service.findBoundary(cur_pointset);
+
+        int edge = Math.max(boundary[2]-boundary[0]+1,boundary[3]-boundary[1]+1);
+        float centerX = ((float)boundary[2] + (float)boundary[0])/2;
+        float centerY = ((float)boundary[3]+ (float)boundary[1])/2;
+
+        double[] params;
+
+        Roi roi = new Roi(boundary[0]-1,boundary[1]-1,boundary[2]-boundary[0]+3,boundary[3]-boundary[1]+3);
+                                
+        slice.setRoi(roi);
+        ImageProcessor cropped = slice.crop();
+        float[] cur_zeroth_centroid = new float[2];
+
+        if (edge == 1){
+            System.out.println("edge = 1");
+            params = service.fit2DGaussian(cropped);
+            cur_zeroth_centroid[0] = (float) (boundary[0] + params[0]);
+            cur_zeroth_centroid[1] = (float) (boundary[1] + params[1]);
+        }
+        else {
+            GaussianCurveFitter fitter = GaussianCurveFitter.create();
+            WeightedObservedPoints row_value = new WeightedObservedPoints();
+            for (int row_num = 0; row_num < cropped.getHeight(); row_num++) {
+                int row_sum = 0;
+                for (int column_num = 0; column_num < cropped.getWidth(); column_num++) {
+                    row_sum += cropped.get(column_num,row_num);
+                }
+                row_value.add(row_num,row_sum);
+            }
+
+            WeightedObservedPoints column_value = new WeightedObservedPoints();
+            for (int column_num = 0; column_num < cropped.getWidth(); column_num++) {
+                int column_sum = 0;
+                for (int row_num = 0; row_num < cropped.getHeight(); row_num++) {
+                    column_sum += cropped.get(column_num,row_num);
+                }
+                column_value.add(column_num,column_sum);
+            }
+                                    
+            double[] bestFit_Y = fitter.fit(row_value.toList());
+            double[] bestFit_X = fitter.fit(column_value.toList());
+            cur_zeroth_centroid[0] = (float) (boundary[0] + bestFit_X[1]);
+            cur_zeroth_centroid[1] = (float) (boundary[1] + bestFit_Y[1]);
+                                    
+        }
+    
+        return cur_zeroth_centroid;                   
+    }
+
     public static List<float[]> localization(String image_filePath, double[] x_parameters, double[] y_parameters) throws Exception{
         //OpenCV workflow. To be implemented
         /*System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -94,16 +148,16 @@ public class ImageProcessing implements PlugInFilter {
 
             original_imageplus.show();
             
-            /*float[] kernel = {
+            float[] kernel = {
                     0.0625f, 0.125f, 0.0625f ,
                     0.125f , 0.25f , 0.125f ,
                     0.0625f, 0.125f, 0.0625f 
-                };*/
-            float[] kernel = {
+                };
+            /*float[] kernel = {
                     0.1111f, 0.1111f, 0.1111f ,
                     0.1111f , 0.1111f , 0.1111f ,
                     0.1111f, 0.1111f, 0.1111f 
-                };
+                };*/
             int kernelWidth = 3;
             int kernelHeight = 3;
             List<float[]> matched_centroids = new ArrayList<>();
@@ -130,7 +184,7 @@ public class ImageProcessing implements PlugInFilter {
             //calculate X_distance and Y_distance based on spectral calibration
 
             double x_distance = x_parameters[2]*central_wavelength*central_wavelength + x_parameters[1]*central_wavelength + x_parameters[0];
-            double y_distance = y_parameters[2]*central_wavelength*central_wavelength + y_parameters[1]*central_wavelength + y_parameters[0]+6; //why +6? need to confirm with Ben
+            double y_distance = y_parameters[2]*central_wavelength*central_wavelength + y_parameters[1]*central_wavelength + y_parameters[0]; // if calibration is good, this should work
             System.out.println("x_distance = " + x_distance + ", y_distance = " + y_distance);
 
             Roi first_roi = new Roi(rect.x+x_distance,rect.y+y_distance,rect.getWidth(),rect.getHeight());
@@ -155,24 +209,17 @@ public class ImageProcessing implements PlugInFilter {
                 ImageProcessor zeroth_slice = uncropped_img.crop();
                 uncropped_img.setRoi(first_roi);
                 ImageProcessor first_slice = uncropped_img.crop();
-
                 //get the image processor
-                Overlay zeroth_overlay = new Overlay();
-                Overlay first_overlay = new Overlay();
                     
 
-                FloatProcessor zeroth_fp = zeroth_slice.convertToFloatProcessor();
-                FloatProcessor first_fp = first_slice.convertToFloatProcessor();
-                Convolver convolver = new Convolver();
-                convolver.setNormalize(true);
-                convolver.convolve(zeroth_fp, kernel, kernelWidth, kernelHeight);
-                convolver.convolve(first_fp, kernel, kernelWidth, kernelHeight);
-                ImageProcessor zeroth_resultIp = zeroth_fp.convertToByteProcessor(true);
-                ImageProcessor first_resultIp = first_fp.convertToByteProcessor(true);
+                ImageProcessor zeroth_resultIp = zeroth_slice.duplicate();
+                ImageProcessor first_resultIp = first_slice.duplicate();
+                zeroth_resultIp.convolve(kernel,kernelWidth,kernelHeight);
+                first_resultIp.convolve(kernel,kernelWidth,kernelHeight);
                 //apply gaussian blur filter
 
-                int zeroth_width = zeroth_slice.getWidth();
-                int zeroth_height = zeroth_slice.getHeight();
+                int roi_width = zeroth_slice.getWidth();
+                int roi_height = zeroth_slice.getHeight();
                     
                 int first_width = first_slice.getWidth();
                 int first_height = first_slice.getHeight();
@@ -184,99 +231,40 @@ public class ImageProcessing implements PlugInFilter {
                 threshold_value = (int) (first_seg_ip.getStatistics().mean + 2.25 *first_seg_ip.getStatistics().stdDev);
                 first_seg_ip.threshold(threshold_value);
 
-                Point[][] pointArray = new Point[first_width][first_height];
+                Point[][] zeroth_pointArray = new Point[first_width][first_height];
+                Point[][] first_pointArray = new Point[first_width][first_height];
 
 
-                for (int y = 0; y < first_height; y++) {
-                    for (int x = 0; x < first_width; x++) {
-                        int pixelValue = first_seg_ip.get(x, y);
-                        pointArray[x][y] = new Point(pixelValue);
+                for (int y = 0; y < roi_height; y++) {
+                    for (int x = 0; x < roi_width; x++) {
+                        int pixelValue = zeroth_seg_ip.get(x, y);
+                        zeroth_pointArray[x][y] = new Point(pixelValue);
+                        pixelValue = first_seg_ip.get(x, y);
+                        first_pointArray[x][y] = new Point(pixelValue);
                     }
                 }
 
                 List<float[]> zeroth_centroids = new ArrayList<>();
                 List<float[]> first_centroids = new ArrayList<>();
-                for (int y = 0; y < first_height; y++) {
-                    for (int x = 0; x < first_width; x++) {
-                        if (pointArray[x][y].visited == false) {
-                            pointArray[x][y].visited = true;
-                            if (pointArray[x][y].color == 255){
-                                List<int[]> cur_pointset = new ArrayList<>();
-                                cur_pointset.add(new int[] { x, y });
-                                service.findSet(x,y,pointArray,cur_pointset);
-                                int[] boundary = service.findBoundary(cur_pointset);
-
-                                int edge = Math.max(boundary[2]-boundary[0]+1,boundary[3]-boundary[1]+1);
-                                float centerX = ((float)boundary[2] + (float)boundary[0])/2;
-                                float centerY = ((float)boundary[3]+ (float)boundary[1])/2;
-
-                                double[] params;
-
-                                Roi roi = new Roi(boundary[0]-1,boundary[1]-1,boundary[2]-boundary[0]+3,boundary[3]-boundary[1]+3);
-                                
-                                first_slice.setRoi(roi);
-                                ImageProcessor cropped = first_slice.crop();
-                                float[] cur_zeroth_centroid = new float[2];
-
-                                if (edge == 1){
-                                    System.out.println("edge = 1");
-                                    params = service.fit2DGaussian(cropped);
-                                    cur_zeroth_centroid[0] = (float) (boundary[0] + params[0]);
-                                    cur_zeroth_centroid[1] = (float) (boundary[1] + params[1]);
-                                }
-                                else {
-                                    GaussianCurveFitter fitter = GaussianCurveFitter.create();
-                                    WeightedObservedPoints row_value = new WeightedObservedPoints();
-                                    for (int row_num = 0; row_num < cropped.getHeight(); row_num++) {
-                                        int row_sum = 0;
-                                        for (int column_num = 0; column_num < cropped.getWidth(); column_num++) {
-                                            row_sum += cropped.get(column_num,row_num);
-                                        }
-                                        row_value.add(row_num,row_sum);
-                                    }
-
-                                    WeightedObservedPoints column_value = new WeightedObservedPoints();
-                                    for (int column_num = 0; column_num < cropped.getWidth(); column_num++) {
-                                        int column_sum = 0;
-                                        for (int row_num = 0; row_num < cropped.getHeight(); row_num++) {
-                                            column_sum += cropped.get(column_num,row_num);
-                                        }
-                                        column_value.add(column_num,column_sum);
-                                    }
-                                    
-                                    double[] bestFit_Y = fitter.fit(row_value.toList());
-                                    double[] bestFit_X = fitter.fit(column_value.toList());
-                                    cur_zeroth_centroid[0] = (float) (boundary[0] + bestFit_X[1]);
-                                    cur_zeroth_centroid[1] = (float) (boundary[1] + bestFit_Y[1]);
-                                    
-                                }
-                                    
-                                
-
-                                    //double centroid_x = (cropped.getRoi().getMinX() + params[0]);
-                                    //double centroid_y = (cropped.getRoi().getMinY() + params[1]);
-
-                                
-                                
-                                first_centroids.add(cur_zeroth_centroid);
-                                    
-                                int armLength = 3;
-                                Roi horizontalLine = new Roi((int) cur_zeroth_centroid[0] - armLength, (int) cur_zeroth_centroid[1], 2 * armLength, 1);
-                                first_overlay.add(horizontalLine);
-
-                                    // Create the vertical arm
-                                Roi verticalLine = new Roi((int) cur_zeroth_centroid[0], (int) cur_zeroth_centroid[1] - armLength, 1, 2 * armLength);
-                                first_overlay.add(verticalLine);
-                                    
-                                first_overlay.setStrokeColor(Color.YELLOW);
+                first_seg_ip.setColor(Color.RED);
+                for (int y = 0; y < roi_height; y++) {
+                    for (int x = 0; x < roi_width; x++) {
+                        if (zeroth_pointArray[x][y].visited == false) {
+                            zeroth_pointArray[x][y].visited = true;
+                            if (zeroth_pointArray[x][y].color == 255){
+                                zeroth_centroids.add(find_bright_blob(zeroth_pointArray,x,y,zeroth_slice));
+                            }
+                        }
+                        if (first_pointArray[x][y].visited == false) {
+                            first_pointArray[x][y].visited = true;
+                            if (first_pointArray[x][y].color == 255){
+                                first_centroids.add(find_bright_blob(first_pointArray,x,y,first_slice));
                             }
                         }
                     }
                 }
 
-
                 ImagePlus overlayImagePlus = new ImagePlus("Overlay Image", first_seg_ip);
-                overlayImagePlus.setOverlay(first_overlay);
                 overlayImagePlus.show();
             }
             reader.close();
