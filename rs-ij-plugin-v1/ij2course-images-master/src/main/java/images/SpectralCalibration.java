@@ -116,7 +116,7 @@ public class SpectralCalibration implements PlugInFilter {
     }
 
 
-    private static List<float[]> findCentroid(ImageProcessor averagedIp) throws Exception {
+    private static List<float[]> findCentroid(ImageProcessor averagedIp,Roi calibration_roi) throws Exception {
         List<float[]> centroids = new ArrayList<>();
         
         float[] kernel = {
@@ -139,12 +139,16 @@ public class SpectralCalibration implements PlugInFilter {
 
         int width = averagedIp.getWidth();
         int height = averagedIp.getHeight();
-        Roi seg_Roi = new Roi(0,60,width,height*0.8-60);
-        resultIp.setRoi(seg_Roi);
+        resultIp.setRoi(calibration_roi);
         ImageProcessor seg_ip = resultIp.crop();
         height = seg_ip.getHeight();
+
+        int threshold_value = (int) (seg_ip.getStatistics().mean + 2.6 *seg_ip.getStatistics().stdDev);
+        seg_ip.threshold(threshold_value);
+
+        ImagePlus whatImagePlus = new ImagePlus("Overlay Image", seg_ip);
+        whatImagePlus.show();
         
-        seg_ip.threshold(75);
 
         Point[][] pointArray = new Point[width][height];
 
@@ -219,13 +223,13 @@ public class SpectralCalibration implements PlugInFilter {
         }
     }
 
-    public static float[] calibrate(String filePath) throws Exception {
+    public static float[] calibrate(String filePath,Roi calibration_roi) throws Exception {
         // Replace "path/to/your/nd2file.nd2" with the actual path to your ND2 file
        
         ImagePlus imagePlus = service.readND2(filePath);
         float[] auto_calibrated = new float[2];
 
-        
+        System.out.println("Calibrate x: "+calibration_roi);
 
         // Check if the ND2 file was successfully read
         if (imagePlus != null) {
@@ -246,7 +250,7 @@ public class SpectralCalibration implements PlugInFilter {
 
             //ImageProcessor filtered = GaussianFilter(averagedIp);
 
-            List<float[]> centroids = findCentroid(averagedIp);
+            List<float[]> centroids = findCentroid(averagedIp,calibration_roi);
 
             String csvFname = "C:\\Users\\xufen\\Downloads\\centroids.csv";
 

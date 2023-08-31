@@ -12,6 +12,9 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+
+import Services.service;
+
 import org.apache.commons.math3.analysis.ParametricUnivariateFunction;
 
 
@@ -19,6 +22,9 @@ import org.apache.commons.math3.analysis.ParametricUnivariateFunction;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.NewImage;
+import ij.gui.Roi;
+import ij.gui.WaitForUserDialog;
+import ij.gui.GenericDialog;
 import ij.io.OpenDialog;
 import ij.io.Opener;
 import ij.plugin.filter.ParticleAnalyzer;
@@ -91,7 +97,15 @@ public class ImagesMain {
 
     public static <T extends RealType<T>> void main(String... args) throws Exception {
 
-        
+        GenericDialog spectral_dialog = new GenericDialog("Load Spectral Calibration");
+        spectral_dialog.addMessage("Run spectral calibration or load calibration result");;
+        spectral_dialog.enableYesNoCancel("Run Calibration","Load Result");
+        spectral_dialog.showDialog();
+
+        GenericDialog axial_dialog = new GenericDialog("Load axial Calibration");
+        axial_dialog.addMessage("Run axial calibration or load calibration result");;
+        axial_dialog.enableYesNoCancel("Run Calibration","Load Result");
+        axial_dialog.showDialog();
         
         OpenDialog od = new OpenDialog("Open ND2 File", null);
         String directory = od.getDirectory();
@@ -119,17 +133,34 @@ public class ImagesMain {
 
         // Read the ND2 file using Bio-Formats
         //ImagePlus imagePlus = readND2(filePath);
+        
         String[] nd2files = new String[5];
-        nd2files[0] = "532_nm.nd2";
-        nd2files[1] = "605_nm.nd2";
-        nd2files[2] = "635_nm.nd2";
-        nd2files[3] = "685_nm.nd2";
-        nd2files[4] = "750_nm.nd2";
+        nd2files[0] = "532.nd2";
+        nd2files[1] = "605.nd2";
+        nd2files[2] = "635.nd2";
+        nd2files[3] = "685.nd2";
+        nd2files[4] = "750.nd2";
         float[][] Result = new float[5][2];
         double[]xData = {532.0,605.0,635.0,685.0,750.0};
 
+        ImagePlus imagePlus = service.readND2(directory+nd2files[0]);
+        // Get the number of frames (images) in the ND2 file
+        int numFrames = imagePlus.getStackSize();
+
+        System.out.println("NumFrames: "+numFrames);
+        // Average all the frames
+        ImageProcessor averagedIp = imagePlus.getStack().getProcessor(1).duplicate();
+        ImagePlus avImagePlus = new ImagePlus("Select Calibration ROI", averagedIp);
+        avImagePlus.show();
+        WaitForUserDialog dialog = new WaitForUserDialog("Select Calibration ROI", "Draw a region on the image and click OK.");
+        dialog.show();
+            
+            // Get the drawn region
+        Roi calibration_roi = avImagePlus.getRoi();
+
+
         for (int i=0;i<5;i++){
-            Result[i] = SpectralCalibration.calibrate(directory+nd2files[i]);
+            Result[i] = SpectralCalibration.calibrate(directory+nd2files[i],calibration_roi);
         }
         WeightedObservedPoints obs_x = new WeightedObservedPoints();
         WeightedObservedPoints obs_y = new WeightedObservedPoints();
@@ -146,14 +177,14 @@ public class ImagesMain {
 
         // Parameters: parameters[0] = a, parameters[1] = b, parameters[2] = c,
         // parameters[3] = d, parameters[4] = e
-        double c = y_parameters[0];
-        double b = y_parameters[1];
-        double a = y_parameters[2];
+        double c = x_parameters[0];
+        double b = x_parameters[1];
+        double a = x_parameters[2];
 
         XYSeries fitted = new XYSeries("Fitted curve");
         for (int i = 300; i<= 800; i++){
             //double y = coefficients[4]* i* i* i* i + coefficients[3]* i* i* i + coefficients[2] * i * i + coefficients[1] * i + coefficients[0];
-            double y = a* i * i+ b*i +c;
+            double y = a* i * i+ b * i +c;
             fitted.add(i, y);
         }
 
@@ -163,8 +194,8 @@ public class ImagesMain {
         System.out.println("Best-fit parameter (c): " + c);
         XYSeries dist_wavelength = new XYSeries("Distance");
         for (int i = 0; i < xData.length; i++) {
-            System.out.println("Distance:"+Result[i][1]);
-            dist_wavelength.add(xData[i],Result[i][1]);
+            System.out.println("Distance:"+Result[i][0]);
+            dist_wavelength.add(xData[i],Result[i][0]);
         }
         
         XYSeriesCollection parabolaset_zeroth = new XYSeriesCollection();
@@ -178,7 +209,7 @@ public class ImagesMain {
             parabolaset_zeroth // Dataset
         );
         XYPlot plot = parabola_zeroth.getXYPlot();
-        plot.getRangeAxis().setRange(5,25);
+        plot.getRangeAxis().setRange(500,1000);
         plot.setDataset(1, dataset_first);
         plot.setRenderer(1, new XYLineAndShapeRenderer());
         
