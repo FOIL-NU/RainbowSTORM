@@ -180,14 +180,17 @@ public class ImageProcessing implements PlugInFilter {
             }
 
             int central_wavelength = 690;
+            int left_wavelength = 670;
+            int right_wavelength = 720;
 
             //calculate X_distance and Y_distance based on spectral calibration
 
-            double x_distance = x_parameters[2]*central_wavelength*central_wavelength + x_parameters[1]*central_wavelength + x_parameters[0];
+            double x_distance = x_parameters[2]*left_wavelength*left_wavelength + x_parameters[1]*left_wavelength + x_parameters[0];
+            double width_inc = x_parameters[2]*right_wavelength*right_wavelength + x_parameters[1]*right_wavelength + x_parameters[0] - x_distance;
             double y_distance = y_parameters[2]*central_wavelength*central_wavelength + y_parameters[1]*central_wavelength + y_parameters[0]; // if calibration is good, this should work
-            System.out.println("x_distance = " + x_distance + ", y_distance = " + y_distance);
+            System.out.println("x_distance = " + x_distance + ", y_distance = " + y_distance +",width_inc ="+width_inc);
 
-            Roi first_roi = new Roi(rect.x+x_distance,rect.y+y_distance,rect.getWidth(),rect.getHeight());
+            Roi first_roi = new Roi(rect.x+x_distance,rect.y+y_distance,rect.getWidth()+2*width_inc,rect.getHeight());
 
             Overlay overlay = new Overlay();
             overlay.add(first_roi);
