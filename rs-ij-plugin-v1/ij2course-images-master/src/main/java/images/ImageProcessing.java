@@ -29,23 +29,6 @@ import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfKeyPoint;
-import org.opencv.core.MatOfPoint;
-//import org.opencv.core.Point;
-import org.opencv.core.Scalar;
-import org.opencv.core.Size;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
-
-
-import org.opencv.features2d.FastFeatureDetector;
-import org.opencv.features2d.Features2d;
-import org.opencv.features2d.Params;
-import org.opencv.features2d.SimpleBlobDetector;
-
 
 public class ImageProcessing implements PlugInFilter {
 
@@ -70,7 +53,19 @@ public class ImageProcessing implements PlugInFilter {
         return zeroth_kdtree;
     }
 
-    private static float[] find_bright_blob(Point[][] pointArray, int x, int y, ImageProcessor slice) throws Exception{
+    //return Roi with respect to first_roi
+    private static Roi find_first_roi(Roi zeroth_blob_roi, Roi first_roi, double[] x_parameters, double[] y_parameters) {
+        double min_x_distance = x_parameters[2]*650*650 + x_parameters[1]*650 + x_parameters[0];
+        double min_y_distance = y_parameters[2]*650*650 + y_parameters[1]*650 + y_parameters[0];
+        double max_x_distance = x_parameters[2]*750*750 + x_parameters[1]*750 + x_parameters[0];
+        System.out.println("min x distance:"+min_x_distance);
+        System.out.println("max x distance:"+max_x_distance);
+        //double max_y_distance = y_parameters[2]*710*710 + y_parameters[1]*710 + y_parameters[0];
+        Roi first_blob_roi = new Roi(zeroth_blob_roi.getBounds().x + min_x_distance-first_roi.getBounds().x, zeroth_blob_roi.getBounds().y + min_y_distance-2-first_roi.getBounds().y, (int)(max_x_distance-min_x_distance)+zeroth_blob_roi.getBounds().width, zeroth_blob_roi.getBounds().height+4);
+        return first_blob_roi;
+    }
+
+    private static Roi find_bright_blob(Point[][] pointArray, int x, int y, Roi zeroth_roi) throws Exception{
         List<int[]> cur_pointset = new ArrayList<>();
         cur_pointset.add(new int[] { x, y });
         service.findSet(x,y,pointArray,cur_pointset);
@@ -82,9 +77,9 @@ public class ImageProcessing implements PlugInFilter {
 
         double[] params;
 
-        Roi roi = new Roi(boundary[0]-1,boundary[1]-1,boundary[2]-boundary[0]+3,boundary[3]-boundary[1]+3);
+        Roi roi = new Roi(boundary[0]-1+zeroth_roi.getBounds().x,boundary[1]-1+zeroth_roi.getBounds().y,boundary[2]-boundary[0]+3,boundary[3]-boundary[1]+3);
                                 
-        slice.setRoi(roi);
+        /*slice.setRoi(roi);
         ImageProcessor cropped = slice.crop();
         float[] cur_zeroth_centroid = new float[2];
 
@@ -119,20 +114,12 @@ public class ImageProcessing implements PlugInFilter {
             cur_zeroth_centroid[0] = (float) (boundary[0] + bestFit_X[1]);
             cur_zeroth_centroid[1] = (float) (boundary[1] + bestFit_Y[1]);
                                     
-        }
+        }*/
     
-        return cur_zeroth_centroid;                   
+        return roi;                   
     }
 
     public static List<float[]> localization(String image_filePath, double[] x_parameters, double[] y_parameters) throws Exception{
-        //OpenCV workflow. To be implemented
-        /*System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        List<Mat> frames = null;
-        try {
-            boolean succeed = Imgcodecs.imreadmulti(filePath, frames);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }*/
 
         try {
             ImageReader reader = new ImageReader();
@@ -141,10 +128,6 @@ public class ImageProcessing implements PlugInFilter {
 
             // Create an ImagePlus from the ImageProcessor
             ImagePlus original_imageplus = service.read_first_slice_ND2(reader,10000);
-            
-            //ImageProcessor ip = first_order_imagePlus.getStack().getProcessor(0);
-            //ImagePlus display_ip = new ImagePlus("2",ip);
-            //first_order_imagePlus.show();
 
             original_imageplus.show();
             
@@ -153,11 +136,7 @@ public class ImageProcessing implements PlugInFilter {
                     0.125f , 0.25f , 0.125f ,
                     0.0625f, 0.125f, 0.0625f 
                 };
-            /*float[] kernel = {
-                    0.1111f, 0.1111f, 0.1111f ,
-                    0.1111f , 0.1111f , 0.1111f ,
-                    0.1111f, 0.1111f, 0.1111f 
-                };*/
+            
             int kernelWidth = 3;
             int kernelHeight = 3;
             List<float[]> matched_centroids = new ArrayList<>();
@@ -204,7 +183,7 @@ public class ImageProcessing implements PlugInFilter {
             
             //return matched_centroids;
             
-            for (int i = 10001; i < 10003; i++) {
+            for (int i = 10001; i < 10002; i++) {
 
                 ImageProcessor uncropped_img = service.read_first_slice_ND2(reader,i).getProcessor();
 
@@ -234,7 +213,7 @@ public class ImageProcessing implements PlugInFilter {
                 threshold_value = (int) (first_seg_ip.getStatistics().mean + 2.25 *first_seg_ip.getStatistics().stdDev);
                 first_seg_ip.threshold(threshold_value);
 
-                Point[][] zeroth_pointArray = new Point[first_width][first_height];
+                Point[][] zeroth_pointArray = new Point[roi_width][roi_height];
                 Point[][] first_pointArray = new Point[first_width][first_height];
 
 
@@ -247,28 +226,54 @@ public class ImageProcessing implements PlugInFilter {
                     }
                 }
 
-                List<float[]> zeroth_centroids = new ArrayList<>();
-                List<float[]> first_centroids = new ArrayList<>();
+                List<Roi> zeroth_blob_roi_list = new ArrayList<>();
+                List<Roi> first_blob_roi_list = new ArrayList<>();
                 first_seg_ip.setColor(Color.RED);
                 for (int y = 0; y < roi_height; y++) {
                     for (int x = 0; x < roi_width; x++) {
                         if (zeroth_pointArray[x][y].visited == false) {
                             zeroth_pointArray[x][y].visited = true;
                             if (zeroth_pointArray[x][y].color == 255){
-                                zeroth_centroids.add(find_bright_blob(zeroth_pointArray,x,y,zeroth_slice));
-                            }
-                        }
-                        if (first_pointArray[x][y].visited == false) {
-                            first_pointArray[x][y].visited = true;
-                            if (first_pointArray[x][y].color == 255){
-                                first_centroids.add(find_bright_blob(first_pointArray,x,y,first_slice));
+                                Roi zeroth_blob_roi = find_bright_blob(zeroth_pointArray,x,y,zeroth_roi);
+                                zeroth_blob_roi_list.add(zeroth_blob_roi);
+                                
+                                Roi first_blob_roi = find_first_roi(zeroth_blob_roi,first_roi,x_parameters,y_parameters);
+                                
+                                for (int y_first = 0; y_first < first_blob_roi.getBounds().height; y_first++){
+                                    for (int x_first = 0; x_first < first_blob_roi.getBounds().width; x_first++){
+                                        if (first_pointArray[x_first][y_first].visited == false) {
+                                            first_pointArray[x_first][y_first].visited = true;
+                                            if (first_pointArray[x_first][y_first].color == 255){
+                                                find_bright_blob(first_pointArray,x_first,y_first,first_roi);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (zeroth_blob_roi.getBounds().width == zeroth_blob_roi.getBounds().height && zeroth_blob_roi.getBounds().width>=7){
+                                    Overlay blob_overlay = new Overlay();
+                                    blob_overlay.add(zeroth_blob_roi);
+                                    blob_overlay.add(first_blob_roi);
+                                    blob_overlay.setStrokeColor(Color.RED);
+                                    ImagePlus overlayImagePlus = new ImagePlus("Overlay Image", uncropped_img);
+                                    overlayImagePlus.setOverlay(blob_overlay);
+                                    overlayImagePlus.show();
+                                    /*uncropped_img.setRoi(zeroth_blob_roi);
+                                    ImageProcessor zero_blob = uncropped_img.crop();
+                                    ImagePlus zeroth_blob_imageplus = new ImagePlus("zeroth blob", zero_blob);
+                                    zeroth_blob_imageplus.show();
+                                    uncropped_img.setRoi(first_blob_roi);
+                                    ImageProcessor first_blob = uncropped_img.crop();
+                                    ImagePlus first_blob_imageplus = new ImagePlus("first blob", first_blob);
+                                    first_blob_imageplus.show();*/
+                                }
                             }
                         }
                     }
                 }
 
-                ImagePlus overlayImagePlus = new ImagePlus("Overlay Image", first_seg_ip);
-                overlayImagePlus.show();
+                //ImagePlus overlayImagePlus = new ImagePlus("Overlay Image", first_seg_ip);
+                //overlayImagePlus.show();
             }
             reader.close();
             return matched_centroids;
