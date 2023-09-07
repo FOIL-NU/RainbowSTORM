@@ -150,7 +150,7 @@ public class SpectralCalibration implements PlugInFilter {
         int width = seg_ip.getWidth();
         int height = seg_ip.getHeight();
 
-        int threshold_value = (int) (threashold_seg_ip.getStatistics().mean + 3.6 *threashold_seg_ip.getStatistics().stdDev);
+        int threshold_value = (int) (threashold_seg_ip.getStatistics().mean + 3.65 *threashold_seg_ip.getStatistics().stdDev);
         System.out.println("Mean is:"+threashold_seg_ip.getStatistics().mean);
         System.out.println("threshold_value is:"+threshold_value);
         threashold_seg_ip.threshold(threshold_value);
