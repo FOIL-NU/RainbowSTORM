@@ -24,9 +24,8 @@ public class service {
 		Observation data = LocalizationUtils.gatherObservationData(ImagePlusAdapter.wrapShort(new ImagePlus("", ip)), cpoint, center);
 
 		double[] params = new MLGaussianEstimator(2.0, 2).initializeFit(cpoint, data);
-
-		LevenbergMarquardtSolver.solve(data.X, params, data.I, new Gaussian(), 1e-3, 1e-1, 300);
-
+        //double[] params = {(double) center[0], (double) center[1]};
+		LevenbergMarquardtSolver.solve(data.X, params, data.I, new Gaussian(), 1e-3, 1e-2, 300);
 		return params;
 	}
 
@@ -62,9 +61,9 @@ public class service {
             // Create an ImageProcessor from the pixel data
             int width = (int) reader.getSizeX();
             int height = (int) reader.getSizeY();
-            System.out.println("width:"+width);
-            System.out.println("height:"+height);
-            System.out.println("pixels length:"+pixels.length);
+            //System.out.println("width:"+width);
+            //System.out.println("height:"+height);
+            //System.out.println("pixels length:"+pixels.length);
             short[] pixelValues = new short[width * height];
 
             // Populate the pixelValues array from the byteArray (assuming each pixel is represented by 2 bytes)

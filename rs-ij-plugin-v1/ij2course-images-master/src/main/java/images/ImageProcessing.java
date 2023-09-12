@@ -14,11 +14,14 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.exception.TooManyEvaluationsException;
+import org.apache.commons.math3.exception.TooManyIterationsException;
 import org.apache.commons.math3.fitting.GaussianCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoints;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.index.kdtree.KdTree;
+import org.opencv.core.Mat;
 
 import loci.formats.ImageReader;
 import Services.service;
@@ -59,20 +62,8 @@ public class ImageProcessing implements PlugInFilter {
 
     private static void update_localization(ImageProcessor localization_ImageProcessor, int[] centroid){
         //if (localization_ImageProcessor.get(centroid[0],centroid[1])+4 <= 256){
-        localization_ImageProcessor.set(centroid[0],centroid[1],localization_ImageProcessor.get(centroid[0],centroid[1])+4);
+        localization_ImageProcessor.putPixel(centroid[0],centroid[1],localization_ImageProcessor.get(centroid[0],centroid[1])+64);
         //}
-            
-        if (centroid[0] > 0 && centroid[1] > 0 && centroid[0] < localization_ImageProcessor.getWidth()-1 && centroid[1] < localization_ImageProcessor.getHeight()-1){
-            localization_ImageProcessor.set(centroid[0]-1,centroid[1],localization_ImageProcessor.get(centroid[0]-1,centroid[1])+2);
-            localization_ImageProcessor.set(centroid[0],centroid[1]-1,localization_ImageProcessor.get(centroid[0],centroid[1]-1)+2);
-            localization_ImageProcessor.set(centroid[0]+1,centroid[1],localization_ImageProcessor.get(centroid[0]+1,centroid[1])+2);
-            localization_ImageProcessor.set(centroid[0],centroid[1]+1,localization_ImageProcessor.get(centroid[0],centroid[1]+1)+2);
-            localization_ImageProcessor.set(centroid[0]-1,centroid[1]-1,localization_ImageProcessor.get(centroid[0]-1,centroid[1]-1)+1);
-            localization_ImageProcessor.set(centroid[0]-1,centroid[1]+1,localization_ImageProcessor.get(centroid[0]-1,centroid[1]+1)+1);
-            localization_ImageProcessor.set(centroid[0]+1,centroid[1]-1,localization_ImageProcessor.get(centroid[0]+1,centroid[1]-1)+1);
-            localization_ImageProcessor.set(centroid[0]+1,centroid[1]+1,localization_ImageProcessor.get(centroid[0]+1,centroid[1]+1)+1);
-        }
-        
         return;
     }
 
@@ -84,7 +75,7 @@ public class ImageProcessing implements PlugInFilter {
         int[] boundary = service.findBoundary(cur_pointset);
 
         
-        Roi roi = new Roi(boundary[0]-1,boundary[1]-1,boundary[2]-boundary[0]+3,boundary[3]-boundary[1]+3);
+        Roi roi = new Roi(Math.max(boundary[0]-1,0),Math.max(boundary[1]-1,0),boundary[2]-boundary[0]+3,boundary[3]-boundary[1]+3);
                                 
         /**/
     
@@ -103,36 +94,41 @@ public class ImageProcessing implements PlugInFilter {
         float[] cur_zeroth_centroid = new float[2];
 
         if (edge <= 3){
-            System.out.println("edge = 1");
             params = service.fit2DGaussian(cropped);
-            cur_zeroth_centroid[0] = (float) (roi.getBounds().x + params[0]);
-            cur_zeroth_centroid[1] = (float) (roi.getBounds().y + params[1]);
+            cur_zeroth_centroid[0] = (float) (roi.getBounds().x) + (float) params[0];
+            cur_zeroth_centroid[1] = (float) (roi.getBounds().y) + (float) params[1];
         }
         else {
-            GaussianCurveFitter fitter = GaussianCurveFitter.create();
-            WeightedObservedPoints row_value = new WeightedObservedPoints();
-            for (int row_num = 0; row_num < cropped.getHeight(); row_num++) {
-                int row_sum = 0;
-                for (int column_num = 0; column_num < cropped.getWidth(); column_num++) {
-                    row_sum += cropped.get(column_num,row_num);
-                }
-                row_value.add(row_num,row_sum);
-            }
-
-            WeightedObservedPoints column_value = new WeightedObservedPoints();
-            for (int column_num = 0; column_num < cropped.getWidth(); column_num++) {
-                int column_sum = 0;
+            //double[] start_pt = {(double)roi.getBounds().width/2,(double)roi.getBounds().height/2};
+            try {
+                WeightedObservedPoints row_value = new WeightedObservedPoints();
                 for (int row_num = 0; row_num < cropped.getHeight(); row_num++) {
-                    column_sum += cropped.get(column_num,row_num);
+                    int row_sum = 0;
+                    for (int column_num = 0; column_num < cropped.getWidth(); column_num++) {
+                        row_sum += cropped.get(column_num,row_num);
+                    }
+                    row_value.add(row_num,row_sum);
                 }
-                column_value.add(column_num,column_sum);
+                WeightedObservedPoints column_value = new WeightedObservedPoints();
+                for (int column_num = 0; column_num < cropped.getWidth(); column_num++) {
+                    int column_sum = 0;
+                    for (int row_num = 0; row_num < cropped.getHeight(); row_num++) {
+                        column_sum += cropped.get(column_num,row_num);
+                    }
+                    column_value.add(column_num,column_sum);
+                }
+        
+                double[] bestFit_X = GaussianCurveFitter.create().withMaxIterations(100).fit(column_value.toList()); // sometimes code will stuck on these 2 lines. idk why
+                //System.out.println("fit x");
+                double[] bestFit_Y = GaussianCurveFitter.create().withMaxIterations(100).fit(row_value.toList());
+                //System.out.println("fit y");
+                cur_zeroth_centroid[0] = (float) (roi.getBounds().x) + (float) bestFit_X[1];
+                cur_zeroth_centroid[1] = (float) (roi.getBounds().y) + (float) bestFit_Y[1];
             }
-                                    
-            double[] bestFit_Y = fitter.fit(row_value.toList());
-            double[] bestFit_X = fitter.fit(column_value.toList());
-            cur_zeroth_centroid[0] = (float) (roi.getBounds().x + bestFit_X[1]);
-            cur_zeroth_centroid[1] = (float) (roi.getBounds().y + bestFit_Y[1]);
-                                    
+            catch (TooManyIterationsException e) {
+                float[] error_centroid = {-1,-1};
+                return error_centroid;
+            }
         }
         return cur_zeroth_centroid;
     }
@@ -199,12 +195,12 @@ public class ImageProcessing implements PlugInFilter {
             // Display the image
 
             // create empty image to hold localization results
-            ImageProcessor localization_ImageProcessor = new ShortProcessor(zeroth_roi.getBounds().width*10, zeroth_roi.getBounds().height*10);
-            
+            //ImageProcessor localization_ImageProcessor = new ByteProcessor(zeroth_roi.getBounds().width*10, zeroth_roi.getBounds().height*10);
+            ImageProcessor localization_ImageProcessor = new ByteProcessor(first_roi.getBounds().width*10, first_roi.getBounds().height*10);
 
             ImagePlus overlayImagePlus = new ImagePlus("localization Image", localization_ImageProcessor);
             overlayImagePlus.show();
-            for (int i = 1; i < 12000; i++) {
+            for (int i = 0; i < 30000; i++) {
 
                 ImageProcessor uncropped_img = service.read_first_slice_ND2(reader,i).getProcessor();
 
@@ -229,7 +225,7 @@ public class ImageProcessing implements PlugInFilter {
 
                 ImageProcessor zeroth_seg_ip = zeroth_resultIp.duplicate();
                 ImageProcessor first_seg_ip = first_resultIp.duplicate();
-                int zeroth_threshold_value = (int) (zeroth_seg_ip.getStatistics().mean + 2.5 *zeroth_seg_ip.getStatistics().stdDev);
+                int zeroth_threshold_value = (int) (zeroth_seg_ip.getStatistics().mean + 2.7 *zeroth_seg_ip.getStatistics().stdDev);
                 zeroth_seg_ip.threshold(zeroth_threshold_value);
 
                 //ImagePlus thresholded_zeroth = new ImagePlus("thresholded", zeroth_seg_ip);
@@ -256,23 +252,28 @@ public class ImageProcessing implements PlugInFilter {
                 first_seg_ip.setColor(Color.RED);
                 for (int y = 0; y < roi_height; y++) {
                     for (int x = 0; x < roi_width; x++) {
+                //for (int y = 0; y < first_height; y++) {
+                //    for (int x = 0; x < first_width; x++) {
+
                         if (zeroth_pointArray[x][y].visited == false) {
                             zeroth_pointArray[x][y].visited = true;
                             if (zeroth_pointArray[x][y].color == 255){
                                 Roi zeroth_blob_roi = find_psf(zeroth_pointArray,x,y);
-                                zeroth_blob_roi_list.add(zeroth_blob_roi);
+                                
                                 float[] zeroth_centroid = find_psf_centroid(zeroth_blob_roi, zeroth_slice);
-                                int[] to_localization_centroid = {(int)(zeroth_centroid[0]*10),(int)(zeroth_centroid[1]*10)};
-                                System.out.println("centroid x:"+to_localization_centroid[0]);
-                                System.out.println("centroid y:"+to_localization_centroid[1]);
-                                if (to_localization_centroid[0] >= 0 && to_localization_centroid[0] < localization_ImageProcessor.getWidth() && to_localization_centroid[1] >= 0 && to_localization_centroid[1] < localization_ImageProcessor.getHeight()){
+                                
+                                if (zeroth_centroid[0] >= zeroth_blob_roi.getBounds().x && zeroth_centroid[0] < zeroth_blob_roi.getBounds().x+zeroth_blob_roi.getBounds().width && zeroth_centroid[1] >= zeroth_blob_roi.getBounds().y && zeroth_centroid[1] < zeroth_blob_roi.getBounds().y+zeroth_blob_roi.getBounds().height){
+                                    zeroth_blob_roi_list.add(zeroth_blob_roi);
+                                    int[] to_localization_centroid = {(int)(zeroth_centroid[0]*10),(int)(zeroth_centroid[1]*10)};
+                                    System.out.println("x:"+zeroth_centroid[0]*10+", y:"+zeroth_centroid[1]*10);
+                                    //System.out.println("zeroth_blob_roi.getBounds().y:"+zeroth_blob_roi.getBounds().y);
                                     update_localization(localization_ImageProcessor,to_localization_centroid);
                                 }
                                 
                                 
-                                Roi first_blob_roi = find_first_roi(zeroth_blob_roi,first_roi,zeroth_roi,x_parameters,y_parameters);
+                                //Roi first_blob_roi = find_first_roi(zeroth_blob_roi,first_roi,zeroth_roi,x_parameters,y_parameters);
                                 
-                                for (int y_first = 0; y_first < first_blob_roi.getBounds().height; y_first++){
+                                /*for (int y_first = 0; y_first < first_blob_roi.getBounds().height; y_first++){
                                     for (int x_first = 0; x_first < first_blob_roi.getBounds().width; x_first++){
                                         if (first_pointArray[x_first][y_first].visited == false) {
                                             first_pointArray[x_first][y_first].visited = true;
@@ -281,7 +282,7 @@ public class ImageProcessing implements PlugInFilter {
                                             }
                                         }
                                     }
-                                }
+                                }*/
 
                                 /*if (zeroth_blob_roi.getBounds().width == zeroth_blob_roi.getBounds().height && zeroth_blob_roi.getBounds().width>=7){
                                     Overlay zero_blob_overlay = new Overlay();
@@ -302,8 +303,10 @@ public class ImageProcessing implements PlugInFilter {
                     }
                 }
                 overlayImagePlus.updateAndDraw();
-                
+                System.out.println("i:"+i);
             }
+            localization_ImageProcessor.convolve(kernel, kernelWidth, kernelHeight);
+            overlayImagePlus.updateAndDraw();
             reader.close();
             return matched_centroids;
         }
