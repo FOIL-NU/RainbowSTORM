@@ -7,6 +7,7 @@ import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 import ij.process.ByteProcessor;
 import images.Point;
+import ij.gui.Roi;
 import loci.plugins.BF;
 import loci.formats.ImageReader;
 import net.imglib2.algorithm.localization.Gaussian;
@@ -36,6 +37,15 @@ public class service {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public static boolean check_within_roi(float[] centroid, Roi roi){
+        if (centroid[0] >= roi.getBounds().x && centroid[0] < roi.getBounds().x+roi.getBounds().width && centroid[1] >= roi.getBounds().y && centroid[1] < roi.getBounds().y+roi.getBounds().height){
+            return true;
+        }
+        else{
+            return false;
         }
     }
 
@@ -80,6 +90,15 @@ public class service {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public static void make_pointArray(Point[][] pointArray, ImageProcessor seg_ip){
+        for (int y = 0; y < seg_ip.getHeight(); y++) {
+            for (int x = 0; x < seg_ip.getWidth(); x++) {
+                int pixelValue = seg_ip.get(x, y);
+                pointArray[x][y] = new Point(pixelValue);
+            }
         }
     }
 

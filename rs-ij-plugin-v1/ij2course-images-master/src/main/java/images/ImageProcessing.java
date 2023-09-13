@@ -48,7 +48,7 @@ public class ImageProcessing implements PlugInFilter {
         throw new UnsupportedOperationException("Unimplemented method 'setup'");
     }
 
-    //return Roi with respect to first order ROI
+    //return Roi with respect to first order ROI(coordinate is the coordinate in first slice)
     private static Roi find_first_roi(Roi zeroth_blob_roi, Roi first_roi, Roi zeroth_roi, double[] x_parameters, double[] y_parameters) {
         double min_x_distance = x_parameters[2]*650*650 + x_parameters[1]*650 + x_parameters[0];
         double min_y_distance = y_parameters[2]*650*650 + y_parameters[1]*650 + y_parameters[0];
@@ -56,8 +56,8 @@ public class ImageProcessing implements PlugInFilter {
         //System.out.println("min x distance:"+min_x_distance);
         //System.out.println("max x distance:"+max_x_distance);
         //double max_y_distance = y_parameters[2]*710*710 + y_parameters[1]*710 + y_parameters[0];
-        Roi first_blob_roi = new Roi(zeroth_blob_roi.getBounds().x + min_x_distance-first_roi.getBounds().x+zeroth_roi.getBounds().x, zeroth_blob_roi.getBounds().y + min_y_distance-2-first_roi.getBounds().y+zeroth_roi.getBounds().y, (int)(max_x_distance-min_x_distance)+zeroth_blob_roi.getBounds().width, zeroth_blob_roi.getBounds().height+4);
-        return first_blob_roi;
+        Roi first_psf_roi = new Roi(zeroth_blob_roi.getBounds().x + min_x_distance-first_roi.getBounds().x+zeroth_roi.getBounds().x, zeroth_blob_roi.getBounds().y + min_y_distance-2-first_roi.getBounds().y+zeroth_roi.getBounds().y, (int)(max_x_distance-min_x_distance)+zeroth_blob_roi.getBounds().width, zeroth_blob_roi.getBounds().height+4);
+        return first_psf_roi;
     }
 
     private static void update_localization(ImageProcessor localization_ImageProcessor, int[] centroid){
@@ -200,7 +200,9 @@ public class ImageProcessing implements PlugInFilter {
 
             ImagePlus overlayImagePlus = new ImagePlus("localization Image", localization_ImageProcessor);
             overlayImagePlus.show();
-            for (int i = 0; i < 30000; i++) {
+
+            //Main loop: go through all 30,000 frame
+            for (int i = 10000; i < 10001; i++) {
 
                 ImageProcessor uncropped_img = service.read_first_slice_ND2(reader,i).getProcessor();
 
@@ -237,15 +239,9 @@ public class ImageProcessing implements PlugInFilter {
                 Point[][] zeroth_pointArray = new Point[roi_width][roi_height];
                 Point[][] first_pointArray = new Point[first_width][first_height];
 
-
-                for (int y = 0; y < roi_height; y++) {
-                    for (int x = 0; x < roi_width; x++) {
-                        int pixelValue = zeroth_seg_ip.get(x, y);
-                        zeroth_pointArray[x][y] = new Point(pixelValue);
-                        pixelValue = first_seg_ip.get(x, y);
-                        first_pointArray[x][y] = new Point(pixelValue);
-                    }
-                }
+                //copy thresholded image to point Array for clustering the region
+                service.make_pointArray(zeroth_pointArray, zeroth_seg_ip);
+                service.make_pointArray(first_pointArray, first_seg_ip);
 
                 List<Roi> zeroth_blob_roi_list = new ArrayList<>();
                 List<Roi> first_blob_roi_list = new ArrayList<>();
@@ -258,16 +254,38 @@ public class ImageProcessing implements PlugInFilter {
                         if (zeroth_pointArray[x][y].visited == false) {
                             zeroth_pointArray[x][y].visited = true;
                             if (zeroth_pointArray[x][y].color == 255){
-                                Roi zeroth_blob_roi = find_psf(zeroth_pointArray,x,y);
+                                Roi zeroth_psf_roi = find_psf(zeroth_pointArray,x,y);
                                 
-                                float[] zeroth_centroid = find_psf_centroid(zeroth_blob_roi, zeroth_slice);
+                                float[] zeroth_centroid = find_psf_centroid(zeroth_psf_roi, zeroth_slice);
                                 
-                                if (zeroth_centroid[0] >= zeroth_blob_roi.getBounds().x && zeroth_centroid[0] < zeroth_blob_roi.getBounds().x+zeroth_blob_roi.getBounds().width && zeroth_centroid[1] >= zeroth_blob_roi.getBounds().y && zeroth_centroid[1] < zeroth_blob_roi.getBounds().y+zeroth_blob_roi.getBounds().height){
-                                    zeroth_blob_roi_list.add(zeroth_blob_roi);
+                                if (service.check_within_roi(zeroth_centroid,zeroth_psf_roi)){
+                                    zeroth_blob_roi_list.add(zeroth_psf_roi);
+                                    Roi first_psf_roi = find_first_roi(zeroth_psf_roi,first_roi,zeroth_roi,x_parameters,y_parameters);
                                     int[] to_localization_centroid = {(int)(zeroth_centroid[0]*10),(int)(zeroth_centroid[1]*10)};
                                     System.out.println("x:"+zeroth_centroid[0]*10+", y:"+zeroth_centroid[1]*10);
                                     //System.out.println("zeroth_blob_roi.getBounds().y:"+zeroth_blob_roi.getBounds().y);
                                     update_localization(localization_ImageProcessor,to_localization_centroid);
+                                    
+                                    for (int first_y = 0; first_y < first_psf_roi.getBounds().height; first_y++){
+                                        for (int first_x = 0; first_x < first_psf_roi.getBounds().width; first_x++){
+                                            if (first_pointArray[first_x + first_psf_roi.getBounds().x][first_y + first_psf_roi.getBounds().y].visited == false) {
+                                                first_pointArray[first_x + first_psf_roi.getBounds().x][first_y + first_psf_roi.getBounds().y].visited = true;
+                                                if (first_pointArray[first_x + first_psf_roi.getBounds().x][first_y + first_psf_roi.getBounds().y].color == 255){
+                                                    float[] first_centroid = find_psf_centroid(first_psf_roi, first_slice);
+                                                    if (service.check_within_roi(first_centroid,first_psf_roi)){
+                                                        first_slice.drawLine((int)first_centroid[0]-3, (int)first_centroid[1], (int)first_centroid[0]+3, (int)first_centroid[1]);
+                                                        first_slice.drawLine((int)first_centroid[0], (int)first_centroid[1]-3, (int)first_centroid[0], (int)first_centroid[1]+3);
+                                                        first_slice.setRoi(first_psf_roi);
+                                                        ImageProcessor first_psf_roi_ip = first_slice.crop();
+                                                        ImagePlus temp_ImagePlus = new ImagePlus("first", first_psf_roi_ip);
+                                                        temp_ImagePlus.show();
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                        
+                                    
                                 }
                                 
                                 
