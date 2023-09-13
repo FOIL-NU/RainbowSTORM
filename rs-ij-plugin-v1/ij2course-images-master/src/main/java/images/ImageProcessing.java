@@ -246,31 +246,36 @@ public class ImageProcessing implements PlugInFilter {
                 List<Roi> zeroth_blob_roi_list = new ArrayList<>();
                 List<Roi> first_blob_roi_list = new ArrayList<>();
                 first_seg_ip.setColor(Color.RED);
+
+                //for each frame, iterate over zeroth roi and find psf
                 for (int y = 0; y < roi_height; y++) {
                     for (int x = 0; x < roi_width; x++) {
-                //for (int y = 0; y < first_height; y++) {
-                //    for (int x = 0; x < first_width; x++) {
 
                         if (zeroth_pointArray[x][y].visited == false) {
                             zeroth_pointArray[x][y].visited = true;
                             if (zeroth_pointArray[x][y].color == 255){
+
+                                //get zeroth psf roi
                                 Roi zeroth_psf_roi = find_psf(zeroth_pointArray,x,y);
                                 
                                 float[] zeroth_centroid = find_psf_centroid(zeroth_psf_roi, zeroth_slice);
                                 
                                 if (service.check_within_roi(zeroth_centroid,zeroth_psf_roi)){
                                     zeroth_blob_roi_list.add(zeroth_psf_roi);
-                                    Roi first_psf_roi = find_first_roi(zeroth_psf_roi,first_roi,zeroth_roi,x_parameters,y_parameters);
+
+                                    //find corresponding 1st roi window by calculating spectral distance with 650/750 wavelength
+                                    Roi first_psf_window = find_first_roi(zeroth_psf_roi,first_roi,zeroth_roi,x_parameters,y_parameters);
                                     int[] to_localization_centroid = {(int)(zeroth_centroid[0]*10),(int)(zeroth_centroid[1]*10)};
                                     System.out.println("x:"+zeroth_centroid[0]*10+", y:"+zeroth_centroid[1]*10);
                                     //System.out.println("zeroth_blob_roi.getBounds().y:"+zeroth_blob_roi.getBounds().y);
                                     update_localization(localization_ImageProcessor,to_localization_centroid);
                                     
-                                    for (int first_y = 0; first_y < first_psf_roi.getBounds().height; first_y++){
-                                        for (int first_x = 0; first_x < first_psf_roi.getBounds().width; first_x++){
-                                            if (first_pointArray[first_x + first_psf_roi.getBounds().x][first_y + first_psf_roi.getBounds().y].visited == false) {
-                                                first_pointArray[first_x + first_psf_roi.getBounds().x][first_y + first_psf_roi.getBounds().y].visited = true;
-                                                if (first_pointArray[first_x + first_psf_roi.getBounds().x][first_y + first_psf_roi.getBounds().y].color == 255){
+                                    for (int first_y = 0; first_y < first_psf_window.getBounds().height; first_y++){
+                                        for (int first_x = 0; first_x < first_psf_window.getBounds().width; first_x++){
+                                            if (first_pointArray[first_x + first_psf_window.getBounds().x][first_y + first_psf_window.getBounds().y].visited == false) {
+                                                first_pointArray[first_x + first_psf_window.getBounds().x][first_y + first_psf_window.getBounds().y].visited = true;
+                                                if (first_pointArray[first_x + first_psf_window.getBounds().x][first_y + first_psf_window.getBounds().y].color == 255){
+                                                    Roi first_psf_roi = find_psf(first_pointArray, first_x + first_psf_window.getBounds().x, first_y + first_psf_window.getBounds().y);
                                                     float[] first_centroid = find_psf_centroid(first_psf_roi, first_slice);
                                                     if (service.check_within_roi(first_centroid,first_psf_roi)){
                                                         first_slice.drawLine((int)first_centroid[0]-3, (int)first_centroid[1], (int)first_centroid[0]+3, (int)first_centroid[1]);
