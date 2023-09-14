@@ -35,6 +35,9 @@ import ij.process.ShortProcessor;
 
 
 public class ImageProcessing implements PlugInFilter {
+    private static int central_wavelength = 700;
+    private static int left_wavelength = 660;
+    private static int right_wavelength = 740;
 
     @Override
     public void run(ImageProcessor arg0) {
@@ -49,14 +52,22 @@ public class ImageProcessing implements PlugInFilter {
     }
 
     //return Roi with respect to first order ROI(coordinate is the coordinate in first slice)
-    private static Roi find_first_roi(Roi zeroth_blob_roi, Roi first_roi, Roi zeroth_roi, double[] x_parameters, double[] y_parameters) {
-        double min_x_distance = x_parameters[2]*650*650 + x_parameters[1]*650 + x_parameters[0];
-        double min_y_distance = y_parameters[2]*650*650 + y_parameters[1]*650 + y_parameters[0];
-        double max_x_distance = x_parameters[2]*750*750 + x_parameters[1]*750 + x_parameters[0];
-        //System.out.println("min x distance:"+min_x_distance);
-        //System.out.println("max x distance:"+max_x_distance);
+    private static Roi find_first_roi(Roi zeroth_psf_roi, Roi first_roi, Roi zeroth_roi, double[] x_parameters, double[] y_parameters) {
+        double min_x_distance = x_parameters[2]*left_wavelength*left_wavelength + x_parameters[1]*left_wavelength + x_parameters[0];
+        double min_y_distance = y_parameters[2]*central_wavelength*central_wavelength + y_parameters[1]*central_wavelength + y_parameters[0];
+        double max_x_distance = x_parameters[2]*right_wavelength*right_wavelength + x_parameters[1]*right_wavelength + x_parameters[0];
+
+        Roi first_psf_roi;
         //double max_y_distance = y_parameters[2]*710*710 + y_parameters[1]*710 + y_parameters[0];
-        Roi first_psf_roi = new Roi(zeroth_blob_roi.getBounds().x + min_x_distance-first_roi.getBounds().x+zeroth_roi.getBounds().x, zeroth_blob_roi.getBounds().y + min_y_distance-2-first_roi.getBounds().y+zeroth_roi.getBounds().y, (int)(max_x_distance-min_x_distance)+zeroth_blob_roi.getBounds().width, zeroth_blob_roi.getBounds().height+4);
+        int first_psf_roi_y = Math.max((int)(zeroth_psf_roi.getBounds().y + min_y_distance-2-first_roi.getBounds().y+zeroth_roi.getBounds().y),0);
+        if(first_psf_roi_y + zeroth_psf_roi.getBounds().height + 4 < first_roi.getBounds().height){
+            int h = zeroth_psf_roi.getBounds().height+4;
+            first_psf_roi = new Roi((int)(zeroth_psf_roi.getBounds().x + min_x_distance-first_roi.getBounds().x+zeroth_roi.getBounds().x), first_psf_roi_y, (int)(max_x_distance-min_x_distance)+zeroth_psf_roi.getBounds().width, h);
+        }else{
+            int h = first_roi.getBounds().height-first_psf_roi_y;
+            first_psf_roi = new Roi((int)(zeroth_psf_roi.getBounds().x + min_x_distance-first_roi.getBounds().x+zeroth_roi.getBounds().x), first_psf_roi_y, (int)(max_x_distance-min_x_distance)+zeroth_psf_roi.getBounds().width, h);
+        }
+        
         return first_psf_roi;
     }
 
@@ -172,9 +183,7 @@ public class ImageProcessing implements PlugInFilter {
                 return matched_centroids;
             }
 
-            int central_wavelength = 690;
-            int left_wavelength = 670;
-            int right_wavelength = 720;
+
 
             //calculate X_distance and Y_distance based on spectral calibration
 
@@ -201,8 +210,13 @@ public class ImageProcessing implements PlugInFilter {
             ImagePlus overlayImagePlus = new ImagePlus("localization Image", localization_ImageProcessor);
             overlayImagePlus.show();
 
+            //this is the result for assign color
+            List<Float> centroid_x_distance_list = new ArrayList<>();
+            //this is the corresponding zeorth order centroid
+            List<Roi> zeroth_psf_roi_list = new ArrayList<>();
+
             //Main loop: go through all 30,000 frame
-            for (int i = 10000; i < 10001; i++) {
+            for (int i = 0; i < 30000; i++) {
 
                 ImageProcessor uncropped_img = service.read_first_slice_ND2(reader,i).getProcessor();
 
@@ -243,8 +257,7 @@ public class ImageProcessing implements PlugInFilter {
                 service.make_pointArray(zeroth_pointArray, zeroth_seg_ip);
                 service.make_pointArray(first_pointArray, first_seg_ip);
 
-                List<Roi> zeroth_blob_roi_list = new ArrayList<>();
-                List<Roi> first_blob_roi_list = new ArrayList<>();
+                
                 first_seg_ip.setColor(Color.RED);
 
                 //for each frame, iterate over zeroth roi and find psf
@@ -261,7 +274,7 @@ public class ImageProcessing implements PlugInFilter {
                                 float[] zeroth_centroid = find_psf_centroid(zeroth_psf_roi, zeroth_slice);
                                 
                                 if (service.check_within_roi(zeroth_centroid,zeroth_psf_roi)){
-                                    zeroth_blob_roi_list.add(zeroth_psf_roi);
+                                    
 
                                     //find corresponding 1st roi window by calculating spectral distance with 650/750 wavelength
                                     Roi first_psf_window = find_first_roi(zeroth_psf_roi,first_roi,zeroth_roi,x_parameters,y_parameters);
@@ -270,20 +283,26 @@ public class ImageProcessing implements PlugInFilter {
                                     //System.out.println("zeroth_blob_roi.getBounds().y:"+zeroth_blob_roi.getBounds().y);
                                     update_localization(localization_ImageProcessor,to_localization_centroid);
                                     
+
                                     for (int first_y = 0; first_y < first_psf_window.getBounds().height; first_y++){
                                         for (int first_x = 0; first_x < first_psf_window.getBounds().width; first_x++){
+                                            //System.out.println("first x:"+(first_x + first_psf_window.getBounds().x)+", first y:"+(first_y + first_psf_window.getBounds().y));
                                             if (first_pointArray[first_x + first_psf_window.getBounds().x][first_y + first_psf_window.getBounds().y].visited == false) {
                                                 first_pointArray[first_x + first_psf_window.getBounds().x][first_y + first_psf_window.getBounds().y].visited = true;
                                                 if (first_pointArray[first_x + first_psf_window.getBounds().x][first_y + first_psf_window.getBounds().y].color == 255){
                                                     Roi first_psf_roi = find_psf(first_pointArray, first_x + first_psf_window.getBounds().x, first_y + first_psf_window.getBounds().y);
+                                                    
                                                     float[] first_centroid = find_psf_centroid(first_psf_roi, first_slice);
                                                     if (service.check_within_roi(first_centroid,first_psf_roi)){
-                                                        first_slice.drawLine((int)first_centroid[0]-3, (int)first_centroid[1], (int)first_centroid[0]+3, (int)first_centroid[1]);
+                                                        /*first_slice.drawLine((int)first_centroid[0]-3, (int)first_centroid[1], (int)first_centroid[0]+3, (int)first_centroid[1]);
                                                         first_slice.drawLine((int)first_centroid[0], (int)first_centroid[1]-3, (int)first_centroid[0], (int)first_centroid[1]+3);
-                                                        first_slice.setRoi(first_psf_roi);
+                                                        first_slice.setRoi(first_psf_window);
                                                         ImageProcessor first_psf_roi_ip = first_slice.crop();
                                                         ImagePlus temp_ImagePlus = new ImagePlus("first", first_psf_roi_ip);
-                                                        temp_ImagePlus.show();
+                                                        temp_ImagePlus.show();*/
+                                                        zeroth_psf_roi_list.add(zeroth_psf_roi);
+                                                        float centroid_x_distance = first_centroid[0] + first_roi.getBounds().x - zeroth_centroid[0] - zeroth_roi.getBounds().x;
+                                                        centroid_x_distance_list.add(centroid_x_distance);
                                                     }
                                                 }
                                             }
