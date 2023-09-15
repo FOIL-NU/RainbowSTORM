@@ -11,13 +11,25 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import java.awt.Color;
 import java.awt.Rectangle;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JFrame;
 
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.exception.TooManyIterationsException;
 import org.apache.commons.math3.fitting.GaussianCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoints;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYSplineRenderer;
+import org.jfree.data.statistics.HistogramDataset;
+import org.jfree.data.statistics.HistogramType;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.index.kdtree.KdTree;
@@ -349,6 +361,37 @@ public class ImageProcessing implements PlugInFilter {
             }
             localization_ImageProcessor.convolve(kernel, kernelWidth, kernelHeight);
             overlayImagePlus.updateAndDraw();
+
+            //show histogram of centroid_x_distance result
+            HistogramDataset dataset = new HistogramDataset();
+            dataset.setType(HistogramType.FREQUENCY);
+            double[] double_x_distance_Array = new double[centroid_x_distance_list.size()];
+
+            for (int i = 0; i < centroid_x_distance_list.size(); i++) {
+                double_x_distance_Array[i] = centroid_x_distance_list.get(i).doubleValue();
+            }
+            dataset.addSeries("Histogram", double_x_distance_Array, 400);
+
+            JFreeChart chart = ChartFactory.createHistogram(
+                "Float Histogram",
+                "Value",
+                "Frequency",
+                dataset,
+                PlotOrientation.VERTICAL,
+                true,
+                true,
+                false
+            );
+
+
+            JFrame frame = new JFrame("Distance Histogram");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+            frame.add(new ChartPanel(chart));
+
+            frame.pack();
+            frame.setVisible(true);
+
             reader.close();
             return matched_centroids;
         }
