@@ -127,14 +127,10 @@ public class ImagesMain {
         
         // Combine the directory and filename to get the full path
 
-        // Use Bio-Formats to open the ND2 file
-        //Opener opener = new Opener();
-        //ImagePlus image = openND2Image(filePath);
 
-        // Read the ND2 file using Bio-Formats
-        //ImagePlus imagePlus = readND2(filePath);
         
-        String[] nd2files = new String[5];
+        // Start of workflow
+        /*String[] nd2files = new String[5];
         nd2files[0] = "532.nd2";
         nd2files[1] = "605.nd2";
         nd2files[2] = "635.nd2";
@@ -177,9 +173,9 @@ public class ImagesMain {
 
         // Parameters: parameters[0] = a, parameters[1] = b, parameters[2] = c,
         // parameters[3] = d, parameters[4] = e
-        double c = y_parameters[0];
-        double b = y_parameters[1];
-        double a = y_parameters[2];
+        double c = x_parameters[0];
+        double b = x_parameters[1];
+        double a = x_parameters[2];
 
         XYSeries fitted = new XYSeries("Fitted curve");
         for (int i = 300; i<= 800; i++){
@@ -192,10 +188,11 @@ public class ImagesMain {
         System.out.println("Best-fit parameter (a): " + a);
         System.out.println("Best-fit parameter (b): " + b);
         System.out.println("Best-fit parameter (c): " + c);
+        
         XYSeries dist_wavelength = new XYSeries("Distance");
         for (int i = 0; i < xData.length; i++) {
-            System.out.println("Distance:"+Result[i][1]);
-            dist_wavelength.add(xData[i],Result[i][1]);
+            System.out.println("Distance:"+Result[i][0]);
+            dist_wavelength.add(xData[i],Result[i][0]);
         }
         
         XYSeriesCollection parabolaset_zeroth = new XYSeriesCollection();
@@ -209,7 +206,7 @@ public class ImagesMain {
             parabolaset_zeroth // Dataset
         );
         XYPlot plot = parabola_zeroth.getXYPlot();
-        plot.getRangeAxis().setRange(10,30);
+        plot.getRangeAxis().setRange(800,980);
         plot.setDataset(1, dataset_first);
         plot.setRenderer(1, new XYLineAndShapeRenderer());
         
@@ -221,7 +218,11 @@ public class ImagesMain {
         frame.pack();
         frame.setVisible(true);
         
-        //
+        */
+        //End of workflow
+        
+        double[] x_parameters = {486.19734162677076, 1.1771142807321309, -7.299125882031299E-4};
+        double[] y_parameters = {17.649544100350138, -0.021807466978777022, 1.6213024653935325E-5};
         ImageProcessing.localization(whole_img_filepath,x_parameters,y_parameters);
 
 

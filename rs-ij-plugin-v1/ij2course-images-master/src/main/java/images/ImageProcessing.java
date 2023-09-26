@@ -12,6 +12,7 @@ import ij.ImageStack;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.Dimension;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,15 +42,17 @@ import ij.gui.GenericDialog;
 import ij.plugin.filter.Convolver;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
+import ij.process.ImageStatistics;
 import ij.process.ShortProcessor;
 
 
 public class ImageProcessing implements PlugInFilter {
     private static int central_wavelength = 700;
     private static int left_wavelength = 660;
-    private static int right_wavelength = 740;
+    private static int right_wavelength = 710;
 
     @Override
     public void run(ImageProcessor arg0) {
@@ -85,12 +88,34 @@ public class ImageProcessing implements PlugInFilter {
 
     private static void update_localization(ImageProcessor localization_ImageProcessor, int[] centroid){
         //if (localization_ImageProcessor.get(centroid[0],centroid[1])+4 <= 256){
-        localization_ImageProcessor.putPixel(centroid[0],centroid[1],localization_ImageProcessor.get(centroid[0],centroid[1])+64);
+        localization_ImageProcessor.putPixel(centroid[0],centroid[1],localization_ImageProcessor.get(centroid[0],centroid[1])+32);
         //}
         return;
     }
 
-    //return Roi with respect to zeroth order ROI
+    private static ColorProcessor draw_psf(ColorProcessor cp, Boolean red, int x,int y, int color_mod){
+        int pixel = cp.getPixel(x, y);
+        // Extract the red, green, and blue channels
+        int r = (pixel >> 16) & 0xFF;
+        int g = (pixel >> 8) & 0xFF;
+        int b = pixel & 0xFF;
+
+        // Add a value (e.g., 50) to the green channel
+        if (red){
+            r = Math.min(255, r + color_mod); // Ensure the value doesn't exceed 255
+        }else{
+            g = Math.min(255, g + color_mod); // Ensure the value doesn't exceed 255
+        }
+
+        // Combine the modified channels back into a single pixel value
+        int newPixel = (r << 16) | (g << 8) | b;
+        cp.putPixel(x, y, newPixel);
+        return cp;
+    }
+
+    //Input: Point[][] pointArray, int x coordinate, int y coordinate
+    //Output: Roi of psf
+    //Description: return Roi with respect to zeroth order ROI
     private static Roi find_psf(Point[][] pointArray, int x, int y) throws Exception{
         List<int[]> cur_pointset = new ArrayList<>();
         cur_pointset.add(new int[] { x, y });
@@ -98,16 +123,87 @@ public class ImageProcessing implements PlugInFilter {
         int[] boundary = service.findBoundary(cur_pointset);
 
         
-        Roi roi = new Roi(Math.max(boundary[0]-1,0),Math.max(boundary[1]-1,0),boundary[2]-boundary[0]+3,boundary[3]-boundary[1]+3);
+        Roi roi = new Roi(Math.max(boundary[0]-1,0),Math.max(boundary[1]-1,0),Math.min(boundary[2]-boundary[0]+3,pointArray.length-boundary[0]),Math.min(boundary[3]-boundary[1]+3,pointArray[0].length-boundary[1]));
                                 
         /**/
     
         return roi;                   
     }
 
+    private static ImageProcessor getStackMode(ImageProcessor[] processors,Roi zeroth_roi){
+        //int stackMode = 0;
+        ImageProcessor background = new ByteProcessor(zeroth_roi.getBounds().width, zeroth_roi.getBounds().height);
+        //int[] count = new int[256];
+        
+        /*processors[10].setRoi(zeroth_roi);
+        ImageProcessor test = processors[10].crop();
+
+        
+        ImagePlus subtracted_zeroth = new ImagePlus("processor0", test);
+        subtracted_zeroth.show();*/
+
+        // Count pixel occurrences for each image in the stack
+        for (int x=zeroth_roi.getBounds().x; x<zeroth_roi.getBounds().width+zeroth_roi.getBounds().x;x++){
+            for (int y=zeroth_roi.getBounds().y; y<zeroth_roi.getBounds().height+zeroth_roi.getBounds().y;y++){
+                
+                //median workflow
+                int[] pixels = new int[1000];
+                for (int i = 0; i < 1000; i++){
+                    pixels[i] = processors[i].get(x,y);
+                }
+                Arrays.sort(pixels);
+                background.putPixel(x-zeroth_roi.getBounds().x, y-zeroth_roi.getBounds().y, pixels[330]);
+                
+
+                //average workflow
+                /*
+                int pixels = 0;
+                for (int i = 0; i< 1000; i++){
+                    pixels += processors[i].get(x,y);
+                }
+                background.putPixel(x-zeroth_roi.getBounds().x, y-zeroth_roi.getBounds().y, pixels/1000);
+                */
+
+                //stack mode workflow
+                /*for (int i=0;i<100;i++) {
+                    // Get the pixel array for the current image
+                    pixels[i] = processors[i].get(x,y);
+
+                }
+                for (int pixel : pixels) {
+                        count[pixel]++;
+                }
+                int maxCount = 0;
+                for (int i = 0; i < 256; i++) {
+                    if (count[i] > maxCount) {
+                        maxCount = count[i];
+                        stackMode = i;
+                    }
+                }
+                background.putPixel(x-zeroth_roi.getBounds().x, y-zeroth_roi.getBounds().y, stackMode);*/
+            }
+        }
+
+        // Find the mode (most frequent pixel value) for the entire stack
+        
+
+        return background;
+    }
+
+    private static void background_subtraction(ImageProcessor base, ImageProcessor subtractor){
+        for(int x=0;x<base.getWidth();x++){
+            for(int y=0;y<base.getHeight();y++){
+                int base_pixel = base.get(x,y);
+                base.putPixel(x, y, base_pixel-subtractor.get(x,y));
+            }
+        }
+        //return base;
+    }
+
+    //Input: Roi roi(roi of psf), ImageProcessor slice
+    //output: float[] centroid(centroid of psf)
+    //Description: find centroid of psf by fitting a gaussian
     private static float[] find_psf_centroid(Roi roi, ImageProcessor slice) throws Exception{
-
-
         int edge = Math.min(roi.getBounds().width,roi.getBounds().height);
 
         double[] params;
@@ -116,7 +212,7 @@ public class ImageProcessing implements PlugInFilter {
         ImageProcessor cropped = slice.crop();
         float[] cur_zeroth_centroid = new float[2];
 
-        if (edge <= 3){
+        if (edge < 3){
             params = service.fit2DGaussian(cropped);
             cur_zeroth_centroid[0] = (float) (roi.getBounds().x) + (float) params[0];
             cur_zeroth_centroid[1] = (float) (roi.getBounds().y) + (float) params[1];
@@ -213,11 +309,12 @@ public class ImageProcessing implements PlugInFilter {
             ImagePlus zeroth_first_imageplus = new ImagePlus("display", zeroth_first_imageprocessor);
             zeroth_first_imageplus.setOverlay(overlay);
             zeroth_first_imageplus.show();
+            original_imageplus.close();
             // Display the image
 
             // create empty image to hold localization results
             //ImageProcessor localization_ImageProcessor = new ByteProcessor(zeroth_roi.getBounds().width*10, zeroth_roi.getBounds().height*10);
-            ImageProcessor localization_ImageProcessor = new ByteProcessor(first_roi.getBounds().width*10, first_roi.getBounds().height*10);
+            ImageProcessor localization_ImageProcessor = new ByteProcessor(zeroth_roi.getBounds().width*10, zeroth_roi.getBounds().height*10);
 
             ImagePlus overlayImagePlus = new ImagePlus("localization Image", localization_ImageProcessor);
             overlayImagePlus.show();
@@ -225,11 +322,23 @@ public class ImageProcessing implements PlugInFilter {
             //this is the result for assign color
             List<Float> centroid_x_distance_list = new ArrayList<>();
             //this is the corresponding zeorth order centroid
-            List<Roi> zeroth_psf_roi_list = new ArrayList<>();
+            List<float[]> zeroth_psf_centroid_list = new ArrayList<>();
 
             //Main loop: go through all 30,000 frame
+            ImageProcessor[] imp_array = new ImageProcessor[1000];
+            ImageProcessor background = new ByteProcessor(10, 10);
+            ImageProcessor first_background = new ByteProcessor(10, 10);
             for (int i = 0; i < 30000; i++) {
-
+                if (i%1000 == 0){
+                    for (int slice_index=0;slice_index<1000;slice_index++){
+                        imp_array[slice_index] = service.read_first_slice_ND2(reader,i+slice_index).getProcessor().convertToByte(true);
+                    }
+                    
+                    background = getStackMode(imp_array,zeroth_roi);
+                    first_background = getStackMode(imp_array, first_roi);
+                    //ImagePlus subtracted_zeroth = new ImagePlus("BG", background);
+                    //subtracted_zeroth.show();
+                }
                 ImageProcessor uncropped_img = service.read_first_slice_ND2(reader,i).getProcessor();
 
                 uncropped_img.setRoi(zeroth_roi);
@@ -237,11 +346,10 @@ public class ImageProcessing implements PlugInFilter {
                 uncropped_img.setRoi(first_roi);
                 ImageProcessor first_slice = uncropped_img.crop();
                 //get the image processor
-                    
 
                 ImageProcessor zeroth_resultIp = zeroth_slice.duplicate();
                 ImageProcessor first_resultIp = first_slice.duplicate();
-                zeroth_resultIp.convolve(kernel,kernelWidth,kernelHeight);
+                //zeroth_resultIp.convolve(kernel,kernelWidth,kernelHeight);
                 first_resultIp.convolve(kernel,kernelWidth,kernelHeight);
                 //apply gaussian blur filter
 
@@ -251,16 +359,25 @@ public class ImageProcessing implements PlugInFilter {
                 int first_width = first_slice.getWidth();
                 int first_height = first_slice.getHeight();
 
-                ImageProcessor zeroth_seg_ip = zeroth_resultIp.duplicate();
-                ImageProcessor first_seg_ip = first_resultIp.duplicate();
-                int zeroth_threshold_value = (int) (zeroth_seg_ip.getStatistics().mean + 2.7 *zeroth_seg_ip.getStatistics().stdDev);
+                ImageProcessor zeroth_seg_ip = zeroth_resultIp.duplicate().convertToByte(true);
+                ImageProcessor first_seg_ip = first_resultIp.duplicate().convertToByte(true);
+
+                background_subtraction(zeroth_seg_ip,background);
+                //background_subtraction(first_seg_ip,first_background);
+
+                
+                //ImagePlus bg_subtracted_zeroth_ip = new ImagePlus("BG subtracted", zeroth_seg_ip);
+                //bg_subtracted_zeroth_ip.show();
+
+                int zeroth_threshold_value = (int) (zeroth_seg_ip.getStatistics().mean + 3.3 *zeroth_seg_ip.getStatistics().stdDev);
+                System.out.println("theshold val:"+zeroth_threshold_value);
                 zeroth_seg_ip.threshold(zeroth_threshold_value);
 
-                //ImagePlus thresholded_zeroth = new ImagePlus("thresholded", zeroth_seg_ip);
-                //thresholded_zeroth.show();
-
-                int first_threshold_value = (int) (first_seg_ip.getStatistics().mean + 2.25 *first_seg_ip.getStatistics().stdDev);
+                int first_threshold_value = (int) (first_seg_ip.getStatistics().mean + 3 *first_seg_ip.getStatistics().stdDev);
                 first_seg_ip.threshold(first_threshold_value);
+
+                //ImagePlus bg_subtracted_zeroth_ip = new ImagePlus("BG subtracted", first_seg_ip);
+                //bg_subtracted_zeroth_ip.show();
 
                 Point[][] zeroth_pointArray = new Point[roi_width][roi_height];
                 Point[][] first_pointArray = new Point[first_width][first_height];
@@ -270,8 +387,8 @@ public class ImageProcessing implements PlugInFilter {
                 service.make_pointArray(first_pointArray, first_seg_ip);
 
                 
-                first_seg_ip.setColor(Color.RED);
-
+                //first_seg_ip.setColor(Color.RED);
+                Overlay psf_overlay = new Overlay();
                 //for each frame, iterate over zeroth roi and find psf
                 for (int y = 0; y < roi_height; y++) {
                     for (int x = 0; x < roi_width; x++) {
@@ -281,8 +398,10 @@ public class ImageProcessing implements PlugInFilter {
                             if (zeroth_pointArray[x][y].color == 255){
 
                                 //get zeroth psf roi
-                                Roi zeroth_psf_roi = find_psf(zeroth_pointArray,x,y);
                                 
+                                Roi zeroth_psf_roi = find_psf(zeroth_pointArray,x,y);
+                                psf_overlay.add(zeroth_psf_roi);
+
                                 float[] zeroth_centroid = find_psf_centroid(zeroth_psf_roi, zeroth_slice);
                                 
                                 if (service.check_within_roi(zeroth_centroid,zeroth_psf_roi)){
@@ -292,6 +411,7 @@ public class ImageProcessing implements PlugInFilter {
                                     Roi first_psf_window = find_first_roi(zeroth_psf_roi,first_roi,zeroth_roi,x_parameters,y_parameters);
                                     int[] to_localization_centroid = {(int)(zeroth_centroid[0]*10),(int)(zeroth_centroid[1]*10)};
                                     System.out.println("x:"+zeroth_centroid[0]*10+", y:"+zeroth_centroid[1]*10);
+                                    
                                     //System.out.println("zeroth_blob_roi.getBounds().y:"+zeroth_blob_roi.getBounds().y);
                                     update_localization(localization_ImageProcessor,to_localization_centroid);
                                     
@@ -305,16 +425,20 @@ public class ImageProcessing implements PlugInFilter {
                                                     Roi first_psf_roi = find_psf(first_pointArray, first_x + first_psf_window.getBounds().x, first_y + first_psf_window.getBounds().y);
                                                     
                                                     float[] first_centroid = find_psf_centroid(first_psf_roi, first_slice);
-                                                    if (service.check_within_roi(first_centroid,first_psf_roi)){
+                                                    if (service.check_within_roi(first_centroid,first_psf_window)){
                                                         /*first_slice.drawLine((int)first_centroid[0]-3, (int)first_centroid[1], (int)first_centroid[0]+3, (int)first_centroid[1]);
                                                         first_slice.drawLine((int)first_centroid[0], (int)first_centroid[1]-3, (int)first_centroid[0], (int)first_centroid[1]+3);
                                                         first_slice.setRoi(first_psf_window);
                                                         ImageProcessor first_psf_roi_ip = first_slice.crop();
                                                         ImagePlus temp_ImagePlus = new ImagePlus("first", first_psf_roi_ip);
                                                         temp_ImagePlus.show();*/
-                                                        zeroth_psf_roi_list.add(zeroth_psf_roi);
+                                                        zeroth_psf_centroid_list.add(zeroth_centroid);
                                                         float centroid_x_distance = first_centroid[0] + first_roi.getBounds().x - zeroth_centroid[0] - zeroth_roi.getBounds().x;
                                                         centroid_x_distance_list.add(centroid_x_distance);
+                                                        //first_seg_ip.setRoi(first_psf_window);
+                                                        //ImageProcessor seg_ip = first_seg_ip.crop();
+                                                        //ImagePlus temp_seg_ip = new ImagePlus("first order seg", seg_ip);
+                                                        //temp_seg_ip.show();
                                                     }
                                                 }
                                             }
@@ -324,41 +448,20 @@ public class ImageProcessing implements PlugInFilter {
                                     
                                 }
                                 
-                                
-                                //Roi first_blob_roi = find_first_roi(zeroth_blob_roi,first_roi,zeroth_roi,x_parameters,y_parameters);
-                                
-                                /*for (int y_first = 0; y_first < first_blob_roi.getBounds().height; y_first++){
-                                    for (int x_first = 0; x_first < first_blob_roi.getBounds().width; x_first++){
-                                        if (first_pointArray[x_first][y_first].visited == false) {
-                                            first_pointArray[x_first][y_first].visited = true;
-                                            if (first_pointArray[x_first][y_first].color == 255){
-                                                find_psf(first_pointArray,x_first,y_first);
-                                            }
-                                        }
-                                    }
-                                }*/
-
-                                /*if (zeroth_blob_roi.getBounds().width == zeroth_blob_roi.getBounds().height && zeroth_blob_roi.getBounds().width>=7){
-                                    Overlay zero_blob_overlay = new Overlay();
-                                    zero_blob_overlay.add(zeroth_blob_roi);
-                                    Overlay first_blob_overlay = new Overlay();
-                                    first_blob_overlay.add(first_blob_roi);
-                                    zero_blob_overlay.setStrokeColor(Color.RED);
-                                    first_blob_overlay.setStrokeColor(Color.RED);
-                                    ImagePlus zero_overlayImagePlus = new ImagePlus("Overlay Image", zeroth_slice);
-                                    zero_overlayImagePlus.setOverlay(zero_blob_overlay);
-                                    zero_overlayImagePlus.show();
-                                    ImagePlus first_overlayImagePlus = new ImagePlus("Overlay Image", first_slice);
-                                    first_overlayImagePlus.setOverlay(first_blob_overlay);
-                                    first_overlayImagePlus.show();
-                                }*/
                             }
                         }
                     }
                 }
+                //ImagePlus roi_overlayed = new ImagePlus("ROI", zeroth_slice);
+                //roi_overlayed.setOverlay(psf_overlay);
+                //roi_overlayed.show();
+
                 overlayImagePlus.updateAndDraw();
                 System.out.println("i:"+i);
+                
             }
+            reader.close();
+
             localization_ImageProcessor.convolve(kernel, kernelWidth, kernelHeight);
             overlayImagePlus.updateAndDraw();
 
@@ -373,7 +476,7 @@ public class ImageProcessing implements PlugInFilter {
             dataset.addSeries("Histogram", double_x_distance_Array, 400);
 
             JFreeChart chart = ChartFactory.createHistogram(
-                "Float Histogram",
+                "X distance Histogram",
                 "Value",
                 "Frequency",
                 dataset,
@@ -391,8 +494,51 @@ public class ImageProcessing implements PlugInFilter {
 
             frame.pack();
             frame.setVisible(true);
+            
+            List<float[]> redList = new ArrayList<>();
+            List<float[]> greenList = new ArrayList<>();
+            int red_counter = 0;
+            int green_counter = 0;
+            ColorProcessor colorProcessor = new ColorProcessor(zeroth_roi.getBounds().width*5, zeroth_roi.getBounds().height*5);
+            for (int i = 0; i<zeroth_psf_centroid_list.size();i++){
+                if(double_x_distance_Array[i]>=948 && double_x_distance_Array[i]<=952){
+                    redList.add(zeroth_psf_centroid_list.get(i));
+                    red_counter += 1;
+                    int color_x = (int)(zeroth_psf_centroid_list.get(i)[0]*5);
+                    int color_y = (int)(zeroth_psf_centroid_list.get(i)[1]*5);
+                    //draw a red psf on the centroid
+                    colorProcessor = draw_psf(colorProcessor,false,color_x,color_y,32);
+                    colorProcessor = draw_psf(colorProcessor,false,color_x-1,color_y,16);
+                    colorProcessor = draw_psf(colorProcessor,false,color_x,color_y-1,16);
+                    colorProcessor = draw_psf(colorProcessor,false,color_x+1,color_y,16);
+                    colorProcessor = draw_psf(colorProcessor,false,color_x,color_y+1,16);
+                    colorProcessor = draw_psf(colorProcessor,false,color_x-1,color_y-1,8);
+                    colorProcessor = draw_psf(colorProcessor,false,color_x+1,color_y-1,8);
+                    colorProcessor = draw_psf(colorProcessor,false,color_x+1,color_y+1,8);
+                    colorProcessor = draw_psf(colorProcessor,false,color_x-1,color_y+1,8);
 
-            reader.close();
+                }else if (double_x_distance_Array[i]>=953.5 && double_x_distance_Array[i]<=956){
+                    greenList.add(zeroth_psf_centroid_list.get(i));
+                    green_counter += 1;
+                    int color_x = (int)(zeroth_psf_centroid_list.get(i)[0]*5);
+                    int color_y = (int)(zeroth_psf_centroid_list.get(i)[1]*5);
+                    //draw a red psf on the centroid
+                    colorProcessor = draw_psf(colorProcessor,true,color_x,color_y,32);
+                    colorProcessor = draw_psf(colorProcessor,true,color_x-1,color_y,16);
+                    colorProcessor = draw_psf(colorProcessor,true,color_x,color_y-1,16);
+                    colorProcessor = draw_psf(colorProcessor,true,color_x+1,color_y,16);
+                    colorProcessor = draw_psf(colorProcessor,true,color_x,color_y+1,16);
+                    colorProcessor = draw_psf(colorProcessor,true,color_x-1,color_y-1,8);
+                    colorProcessor = draw_psf(colorProcessor,true,color_x+1,color_y-1,8);
+                    colorProcessor = draw_psf(colorProcessor,true,color_x+1,color_y+1,8);
+                    colorProcessor = draw_psf(colorProcessor,true,color_x-1,color_y+1,8);                }
+            }
+            //colorProcessor.convolve(kernel, kernelWidth, kernelHeight);
+            ImagePlus imagePlus = new ImagePlus("Image with Assigned Color", colorProcessor);
+            imagePlus.show();
+            System.out.println("red point:"+red_counter);
+            
+            System.out.println("green point:"+green_counter);
             return matched_centroids;
         }
         catch (Exception e) {

@@ -49,7 +49,6 @@ public class service {
         }
     }
 
-
     public static ImagePlus read_first_slice_ND2(ImageReader reader,int frame_number) {
         try {
             // Use Bio-Formats to read the ND2 file
