@@ -29,7 +29,7 @@ Locate the latest RainbowSTORM release in the [here](https://github.com/FOIL-NU/
 Install the RainbowSTORM plugin (Rainbow_STORM.jar) by copying the file into the Plugins subfolder of your ImageJ installation (e.g. “C:\Program Files\ImageJ\plugins”).  Verify the successful installation of RainbowSTORM by restarting ImageJ and locating RainbowSTORM under the Plugins menu.
 
 # 2025-02-13 Update
-We have an updated version of RainbowSTORM available [here](https://github.com/FOIL-NU/sSMLM-protocol).
+We have an updated version of RainbowSTORM available [here](https://github.com/FOIL-NU/sSMLM-protocol), for use with dual wedge prism-based sSMLM based systems.
 
 # How to Cite
 If you use RainbowSTORM for data analysis, please cite our paper:
